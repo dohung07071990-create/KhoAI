@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kho thông minh</title>
+<link rel="stylesheet" href="style.css">
+</head><body>
+<header>
+  <h1>Kho thông minh</h1>
+  <nav id="tabs">
+    <button data-t="overview" class="on">Tổng quan</button>
+    <button data-t="outside">Camera ngoài</button>
+    <button data-t="inside">Camera trong</button>
+    <button data-t="alerts">Cảnh báo <b id="badge" hidden>0</b></button>
+    <button data-t="history">Lịch sử</button>
+    <button data-t="cards">Thẻ và hồ sơ</button>
+  </nav>
+</header>
+<main>
+<section id="overview">
+  <div class="stats">
+    <div class="stat"><span>ESP32</span><strong id="s-dev">–</strong></div>
+    <div class="stat"><span>Báo động</span><strong id="s-alarm">–</strong></div>
+    <div class="stat"><span>Số thẻ</span><strong id="s-cards">0</strong></div>
+    <div class="stat"><span>Lượt quẹt hôm nay</span><strong id="s-scans">0</strong></div>
+    <div class="stat"><span>Cảnh báo chưa xử lý</span><strong id="s-open">0</strong></div>
+  </div>
+</section>
+
+<section id="outside" hidden>
+  <div class="cam" id="cam-out"><img alt="Camera ngoài"><div class="roi">Vùng A</div></div>
+  <div class="stats">
+    <div class="stat"><span>Người trong vùng</span><strong id="o-people">0</strong></div>
+    <div class="stat"><span>Người đã quẹt</span><strong id="o-scanned">0</strong></div>
+    <div class="stat"><span>Đứng lâu nhất</span><strong id="o-sec">0 giây</strong><em id="o-real"></em></div>
+  </div>
+  <label class="inline">Địa chỉ camera (MJPEG/ảnh)
+    <input id="cam-out-url" placeholder="http://192.168.1.50:81/stream"></label>
+</section>
+
+<section id="inside" hidden>
+  <div class="cam" id="cam-in"><img alt="Camera trong"></div>
+  <div class="map" id="map">
+    <div class="z" data-z="entry"><b>1 · Nhập</b><i></i></div>
+    <div class="z" data-z="exit"><b>2 · Xuất</b><i></i></div>
+    <div class="z" data-z="important"><b>3 · Quan trọng</b><i></i></div>
+    <div class="z" data-z="critical"><b>4 · Cực kỳ quan trọng</b><i></i></div>
+    <div class="door">Cửa</div>
+  </div>
+  <label class="inline">Địa chỉ camera trong
+    <input id="cam-in-url" placeholder="http://192.168.2.35:81/stream"></label>
+</section>
+
+<section id="alerts" hidden><ul id="alert-list" class="list"></ul></section>
+
+
+<section id="alerts" hidden><ul id="alert-list" class="list"></ul></section>
+
+<section id="history" hidden>
+  <table><thead><tr><th>Giờ</th><th>UID</th><th>Tên</th><th>Kết quả</th><th>Lý do</th></tr></thead>
+  <tbody id="scan-body"></tbody></table>
+</section>
+
+<section id="cards" hidden>
+  <form id="card-form">
+    <div class="row"><label>UID <input name="uid" id="uid" required></label>
+      <button type="button" id="btn-last">UID quẹt gần nhất</button></div>
+    <label>Tên <input name="name" required></label>
+    <label>Tuổi <input name="age" type="number" min="1" max="120"></label>
+    <label>Hạn dùng <input name="expires_at" type="date"></label>
+    <label>Số lượt tối đa mỗi ngày <input name="daily_quota" type="number" min="1" value="3"></label>
+    <fieldset><legend>Các vùng được phép</legend>
+      <label class="chk"><input type="checkbox" name="z" value="entry"> Nhập</label>
+      <label class="chk"><input type="checkbox" name="z" value="exit"> Xuất</label>
+      <label class="chk"><input type="checkbox" name="z" value="important"> Quan trọng</label>
+      <label class="chk"><input type="checkbox" name="z" value="critical"> Cực kỳ quan trọng</label>
+    </fieldset>
+    <label>Loại hàng được lấy <input name="item"></label>
+    <label>Số thùng được lấy <input name="boxes" type="number" min="0" value="0"></label>
+    <label>Màu áo / màu người Lego
+      <select name="color"><option value="">Không gắn màu</option>
+        <option value="red">Đỏ</option><option value="blue">Xanh dương</option>
+        <option value="yellow">Vàng</option><option value="orange">Cam</option>
+        <option value="purple">Tím</option></select></label>
+    <button class="primary">Cấp thẻ</button>
+    <p id="form-msg" role="status"></p>
+  </form>
+  <table><thead><tr><th>UID</th><th>Tên</th><th>Hạn</th><th>Lượt</th><th>Vùng</th><th>Hàng</th><th>Màu</th><th></th></tr></thead>
+  <tbody id="card-body"></tbody></table>
+</section>
+</main>
+<script src="app.js"></script>
+</body></html>
