@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kho thông minh</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Kho thông minh</h1>
+  <nav id="tabs">
+    <button data-t="overview" class="on">Tổng quan</button>
+    <button data-t="outside">Camera ngoài</button>
+    <button data-t="inside">Camera trong</button>
+    <button data-t="alerts">Cảnh báo <b id="badge" hidden>0</b></button>
+    <button data-t="history">Lịch sử</button>
+    <button data-t="cards">Thẻ và hồ sơ</button>
+  </nav>
+</header>
+
+<main>
+  <section id="overview">
+    <div class="stats">
+      <div class="stat">
+        <span>ESP32</span>
+        <strong id="s-dev">–</strong>
+      </div>
+      <div class="stat">
+        <span>Báo động</span>
+        <strong id="s-alarm">–</strong>
+      </div>
+      <div class="stat">
+        <span>Số thẻ</span>
+        <strong id="s-cards">0</strong>
+      </div>
+      <div class="stat">
+        <span>Lượt quẹt hôm nay</span>
+        <strong id="s-scans">0</strong>
+      </div>
+      <div class="stat">
+        <span>Cảnh báo chưa xử lý</span>
+        <strong id="s-open">0</strong>
+      </div>
+    </div>
+  </section>
+
+  <section id="outside" hidden>
+    <div class="cam" id="cam-out">
+      <img alt="Camera USB ngoài">
+      <canvas id="cam-out-overlay" aria-label="Lớp vẽ vùng bảo vệ"></canvas>
+    </div>
+
+    <div class="cam-tools">
+      <div class="row cam-zone-actions">
+        <button type="button" id="cam-zone-edit" class="primary">Vẽ vùng bảo vệ</button>
+        <button type="button" id="cam-zone-undo" disabled>Hoàn tác điểm</button>
+        <button type="button" id="cam-zone-save" disabled>Lưu vùng</button>
+        <button type="button" id="cam-zone-cancel" disabled>Hủy</button>
+        <button type="button" id="cam-heatmap-toggle" aria-pressed="false">Heatmap chuyển động</button>
+      </div>
+      <p id="cam-zone-msg" role="status">Vùng bảo vệ được lưu ở backend. Bấm “Vẽ vùng bảo vệ” để đặt các điểm mới trên hình camera.</p>
+    </div>
+
+    <div class="stats cam-metrics">
+      <div class="stat"><span>FPS camera</span><strong id="cam-read-fps">–</strong></div>
+      <div class="stat"><span>FPS AI</span><strong id="cam-ai-fps">–</strong></div>
+      <div class="stat"><span>Độ trễ xử lý</span><strong id="cam-latency">–</strong></div>
+      <div class="stat"><span>Khung hình mới nhất</span><strong id="cam-age">–</strong></div>
+      <div class="stat"><span>Người đang nhận diện</span><strong id="cam-detections">0</strong></div>
+      <div class="stat"><span>Trạng thái AI</span><strong id="cam-ai-status">Đang kiểm tra</strong></div>
+    </div>
+    <div class="cam-event-panel">
+      <h3>Sự kiện camera ngoài</h3>
+      <ul id="cam-event-list" class="list"><li>Đang tải sự kiện camera…</li></ul>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span>Người trong vùng</span>
+        <strong id="o-people">0</strong>
+      </div>
+      <div class="stat">
+        <span>Người đã quẹt</span>
+        <strong id="o-scanned">0</strong>
+      </div>
+      <div class="stat">
+        <span>Đứng lâu nhất</span>
+        <strong id="o-sec">0 giây</strong>
+        <em id="o-real"></em>
+      </div>
+    </div>
+
+    <label class="inline">
+      Địa chỉ camera (MJPEG/ảnh)
+      <input
+        id="cam-out-url"
+        placeholder="/api/camera/stream hoặc http://địa-chỉ-camera/stream">
+    </label>
+  </section>
+
+  <section id="inside" hidden>
+    <div class="cam" id="cam-in">
+      <img alt="Camera trong">
+    </div>
+
+    <label class="inline">
+      Địa chỉ camera trong (luồng đã vẽ vùng từ zone_calib.py)
+      <input
+        id="cam-in-url"
+        value="http://localhost:8081/video"
+        placeholder="http://localhost:8081/video">
+    </label>
+  </section>
+
+  <section id="alerts" hidden>
+    <ul id="alert-list" class="list"></ul>
+  </section>
+
+  <section id="history" hidden>
+    <table>
+      <thead>
+        <tr>
+          <th>Giờ</th>
+          <th>UID</th>
+          <th>Tên</th>
+          <th>Kết quả</th>
+          <th>Lý do</th>
+        </tr>
+      </thead>
+      <tbody id="scan-body"></tbody>
+    </table>
+  </section>
+
+  <section id="cards" hidden>
+    <form id="card-form">
+      <div class="row">
+        <label>
+          UID
+          <input name="uid" id="uid" required>
+        </label>
+        <button type="button" id="btn-last">
+          UID quẹt gần nhất
+        </button>
+      </div>
+
+      <label>
+        Tên
+        <input name="name" required>
+      </label>
+
+      <label>
+        Tuổi
+        <input name="age" type="number" min="1" max="120">
+      </label>
+
+      <label>
+        Hạn dùng
+        <input name="expires_at" type="date">
+      </label>
+
+      <label>
+        Số lượt tối đa mỗi ngày
+        <input name="daily_quota" type="number" min="1" value="3">
+      </label>
+
+      <fieldset>
+        <legend>Các vùng được phép</legend>
+        <label class="chk">
+          <input type="checkbox" name="z" value="entry">
+          Nhập
+        </label>
+        <label class="chk">
+          <input type="checkbox" name="z" value="exit">
+          Xuất
+        </label>
+        <label class="chk">
+          <input type="checkbox" name="z" value="important">
+          Quan trọng
+        </label>
+        <label class="chk">
+          <input type="checkbox" name="z" value="critical">
+          Cực kỳ quan trọng
+        </label>
+      </fieldset>
+
+      <label>
+        Loại hàng được lấy
+        <input name="item">
+      </label>
+
+      <label>
+        Số thùng được lấy
+        <input name="boxes" type="number" min="0" value="0">
+      </label>
+
+      <label>
+        Màu áo / màu người Lego
+        <select name="color">
+          <option value="">Không gắn màu</option>
+          <option value="red">Đỏ</option>
+          <option value="blue">Xanh dương</option>
+          <option value="yellow">Vàng</option>
+          <option value="orange">Cam</option>
+          <option value="purple">Tím</option>
+        </select>
+      </label>
+
+      <button class="primary">Cấp thẻ</button>
+      <p id="form-msg" role="status"></p>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>UID</th>
+          <th>Tên</th>
+          <th>Hạn</th>
+          <th>Lượt</th>
+          <th>Vùng</th>
+          <th>Hàng</th>
+          <th>Màu</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="card-body"></tbody>
+    </table>
+  </section>
+</main>
+
+<script src="app.js"></script>
+<script>
+/* Camera trong: dùng luồng relay (đã vẽ vùng) từ zone_calib.py.
+   Dùng location.hostname để mở web từ máy khác trong mạng LAN vẫn chạy. */
+(function () {
+  var RELAY = "http://" + location.hostname + ":8081/video";
+  var inp = document.getElementById("cam-in-url");
+  var img = document.querySelector("#cam-in img");
+  if (!inp || !img) return;
+
+  function connect() {
+    img.src = RELAY + "?t=" + Date.now();   // chống cache khi kết nối lại
+  }
+
+  inp.value = RELAY;
+  inp.dispatchEvent(new Event("change"));   // báo cho app.js nếu nó lắng nghe ô này
+  connect();
+
+  // Mất luồng (khởi động lại zone_calib.py...) -> tự thử lại sau 2 giây.
+  img.onerror = function () { setTimeout(connect, 2000); };
+})();
+</script>
+</body>
+</html>
