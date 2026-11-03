@@ -1,0 +1,14 @@
+services:
+  khoai:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /app/data/khoai.sqlite3
+    volumes:
+      - khoai_data:/app/data
+    restart: unless-stopped
+volumes:
+  khoai_data:

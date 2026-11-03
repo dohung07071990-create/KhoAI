@@ -1,0 +1,35 @@
+{
+  "min_confidence": 0.7,
+  "actions": {
+    "walking": {
+      "allowed_zones": [
+        "*"
+      ],
+      "requires_work_order": false
+    },
+    "pick_item": {
+      "allowed_zones": [
+        "storage"
+      ],
+      "requires_work_order": true
+    },
+    "enter_restricted_area": {
+      "allowed_zones": [],
+      "requires_work_order": false
+    },
+    "climb": {
+      "allowed_zones": [],
+      "requires_work_order": false
+    },
+    "fight": {
+      "allowed_zones": [],
+      "requires_work_order": false
+    },
+    "fall": {
+      "allowed_zones": [
+        "*"
+      ],
+      "requires_work_order": false
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Chỉ dùng trên Linux host có webcam tại /dev/video0.
+services:
+  khoai:
+    devices:
+      - "/dev/video0:/dev/video0"
