@@ -40,7 +40,11 @@ main{max-width:1000px;margin:0 auto;padding:20px}
 .door{position:absolute;left:50%;bottom:0;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:2px 14px;z-index:3}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 .list li{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:8px solid var(--tape);padding:10px 14px}
+<<<<<<< HEAD
 .list li.info{border-left-color:var(--green)}.list li.severe{border-left-color:var(--red)}.list li.done{opacity:.5}
+=======
+.list li.severe{border-left-color:var(--red)}.list li.done{opacity:.5}
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 .list li span{flex:1}.list small{color:var(--mute);display:block}
 table{width:100%;border-collapse:collapse;background:var(--card);margin-top:16px}
 th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}

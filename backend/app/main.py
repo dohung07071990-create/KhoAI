@@ -12,17 +12,29 @@ import re
 import sqlite3
 import time
 import hmac
+<<<<<<< HEAD
 import asyncio
 from contextlib import asynccontextmanager, contextmanager
 from datetime import date, datetime, timedelta
+=======
+from contextlib import asynccontextmanager, contextmanager
+from datetime import date, datetime
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 from pathlib import Path
 from typing import Any, Iterator
 from zoneinfo import ZoneInfo
 
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Query, Header, Depends, Request
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
+=======
+from fastapi import FastAPI, HTTPException, Query, Header
+from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = ROOT / "frontend"
@@ -39,6 +51,7 @@ EXTERNAL_SEVERE_MINUTES = int(os.getenv("KHOAI_EXTERNAL_SEVERE_MINUTES", "20"))
 _external_camera_state: dict[str, Any] = {"outside": {"people": 0, "max_seconds": 0, "ts": None}, "inside": []}
 
 
+<<<<<<< HEAD
 def prune_old_logs(retention_days: int | None = None) -> dict[str, int]:
     """Delete access/security history older than configured retention; keep current records intact."""
     days = retention_days if retention_days is not None else int(os.getenv("KHOAI_LOG_RETENTION_DAYS", "365"))
@@ -65,6 +78,8 @@ async def _retention_worker() -> None:
         await asyncio.sleep(24 * 60 * 60)
 
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Khởi tạo khi server chạy: logging -> thư mục dữ liệu + DB -> camera AI (nếu có) ; dọn dẹp khi tắt."""
@@ -78,6 +93,7 @@ async def lifespan(_: FastAPI):
         except Exception as exc:  # noqa: BLE001
             logger.warning("Camera AI không khởi động được (%s). Cài `pip install -r ai/requirements.txt`.", exc)
             detector = None
+<<<<<<< HEAD
     sync_task = asyncio.create_task(_camera_event_sync_worker()) if detector is not None else None
     retention_task = asyncio.create_task(_retention_worker())
     try:
@@ -90,10 +106,16 @@ async def lifespan(_: FastAPI):
                     await task
                 except asyncio.CancelledError:
                     pass
+=======
+    try:
+        yield
+    finally:
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         if detector is not None:
             detector.stop()
 
 
+<<<<<<< HEAD
 OPENAPI_ENABLED = os.getenv("KHOAI_ENABLE_OPENAPI", "0") == "1"
 app = FastAPI(
     title="KhoAI – AI warehouse monitoring prototype", version="0.5.4", lifespan=lifespan,
@@ -101,6 +123,9 @@ app = FastAPI(
     redoc_url="/redoc" if OPENAPI_ENABLED else None,
     openapi_url="/openapi.json" if OPENAPI_ENABLED else None,
 )
+=======
+app = FastAPI(title="KhoAI – AI warehouse monitoring prototype", version="0.3.0", lifespan=lifespan)
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 
 def connect_db() -> sqlite3.Connection:
@@ -151,7 +176,11 @@ def init_db() -> None:
         CREATE TABLE IF NOT EXISTS security_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT, event_at TEXT NOT NULL,
             event_type TEXT NOT NULL, track_id INTEGER, severity TEXT NOT NULL,
+<<<<<<< HEAD
             message TEXT NOT NULL, details_json TEXT NOT NULL DEFAULT '{}', source_event_id TEXT
+=======
+            message TEXT NOT NULL, details_json TEXT NOT NULL DEFAULT '{}'
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         );
         CREATE INDEX IF NOT EXISTS idx_security_events_at ON security_events(event_at DESC);
         CREATE INDEX IF NOT EXISTS idx_access_logs_uid ON access_logs(uid);
@@ -170,10 +199,13 @@ def init_db() -> None:
         );
         """)
         # [INTEGRATED] Migrate existing KhoAI databases without deleting existing records.
+<<<<<<< HEAD
         event_columns = {row["name"] for row in db.execute("PRAGMA table_info(security_events)").fetchall()}
         if "source_event_id" not in event_columns:
             db.execute("ALTER TABLE security_events ADD COLUMN source_event_id TEXT")
         db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_security_source_event_id ON security_events(source_event_id) WHERE source_event_id IS NOT NULL")
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         existing = {row["name"] for row in db.execute("PRAGMA table_info(cards)").fetchall()}
         for column, declaration in (
             ("expires_at", "TEXT"), ("daily_quota", "INTEGER NOT NULL DEFAULT 3"),
@@ -186,6 +218,7 @@ def init_db() -> None:
 def now_business() -> str:
     return datetime.now(BUSINESS_TZ).isoformat(timespec="seconds")
 
+<<<<<<< HEAD
 def today_business() -> str:
     return datetime.now(BUSINESS_TZ).date().isoformat()
 
@@ -242,6 +275,8 @@ def require_device_key(x_api_key: str | None = Header(default=None, alias="X-API
     if not _credential_matches(x_api_key, expected):
         raise HTTPException(status_code=401, detail="API key không hợp lệ hoặc chưa được cung cấp.")
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 def normalize_uid(uid: str) -> str:
     normalized = re.sub(r"[\s:-]", "", uid).upper()
@@ -261,6 +296,7 @@ class CardCreate(BaseModel):
     item: str | None = Field(default=None, max_length=100)
     boxes: int = Field(default=0, ge=0, le=100000)
 
+<<<<<<< HEAD
     @field_validator("expires_at")
     @classmethod
     def validate_expiry(cls, value):
@@ -280,6 +316,8 @@ class CardCreate(BaseModel):
             raise ValueError("color chỉ nhận mã hex #RRGGBB hoặc tên màu chữ")
         return value
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 class RFIDScan(BaseModel):
     uid: str = Field(min_length=4, max_length=24)
@@ -313,8 +351,13 @@ class CameraZoneUpdate(BaseModel):
     frame_size: list[int] | None = Field(default=None, min_length=2, max_length=2)
 
 
+<<<<<<< HEAD
 class CameraAntiTheftUpdate(BaseModel):
     enabled: bool
+=======
+class CameraSourceUpdate(BaseModel):
+    source: str = Field(default="auto", max_length=300, description="'auto', index (0,1,2...), URL hoặc đường dẫn thiết bị")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 
 class TrackAssociation(BaseModel):
@@ -322,11 +365,33 @@ class TrackAssociation(BaseModel):
     track_id: int = Field(ge=0)
 
 
+<<<<<<< HEAD
+=======
+class InventoryItem(BaseModel):
+    sku: str = Field(min_length=1, max_length=50)
+    name: str = Field(min_length=1, max_length=100)
+    registered_quantity: int = Field(ge=0, le=100000)
+
+
+class InventoryCompare(BaseModel):
+    sku: str = Field(min_length=1, max_length=50)
+    observed_quantity: int = Field(ge=0, le=100000)
+    # Optional tracking ID for audit context, not proof of identity.
+    track_id: int | None = Field(default=None, ge=0)
+
+
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 @app.get("/", include_in_schema=False)
 def home() -> FileResponse:
     return FileResponse(FRONTEND_DIR / "index.html")
 
 
+<<<<<<< HEAD
+=======
+@app.get("/manus-routes.json", include_in_schema=False)
+def route_manifest() -> FileResponse:
+    return FileResponse(PUBLIC_DIR / "manus-routes.json", media_type="application/json")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
@@ -334,10 +399,17 @@ app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
+<<<<<<< HEAD
     return {"status": "ok", "service": "kho-ai-demo", "version": "0.5.4"}
 
 
 @app.get("/api/camera/status", dependencies=[Depends(require_admin)])
+=======
+    return {"status": "ok", "service": "kho-ai-demo", "version": "0.3.0"}
+
+
+@app.get("/api/camera/status")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def camera_status() -> dict[str, Any]:
     """Tình trạng camera USB và pipeline YOLO/ByteTrack."""
     try:
@@ -348,7 +420,11 @@ def camera_status() -> dict[str, Any]:
         raise HTTPException(status_code=503, detail=f"Không đọc được trạng thái camera: {exc}") from exc
 
 
+<<<<<<< HEAD
 @app.get("/api/camera/stream", dependencies=[Depends(require_admin_query)])
+=======
+@app.get("/api/camera/stream")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def camera_stream() -> StreamingResponse:
     """Phát video MJPEG đã được YOLO vẽ khung nhận diện từ camera USB."""
     try:
@@ -358,6 +434,7 @@ def camera_stream() -> StreamingResponse:
         logger.exception("Không thể khởi động luồng camera")
         raise HTTPException(status_code=503, detail=f"Không thể khởi động camera AI: {exc}") from exc
 
+<<<<<<< HEAD
     async def frames():
         last_seq = 0
         try:
@@ -370,10 +447,22 @@ def camera_stream() -> StreamingResponse:
                 yield b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(jpeg)).encode("ascii") + b"\r\n\r\n" + jpeg + b"\r\n"
         except asyncio.CancelledError:
             raise
+=======
+    def frames():
+        last_seq = 0
+        while True:
+            result = detector.wait_for_frame(last_seq, timeout=2.0)
+            if result is None:
+                # Keep connection alive while camera/model is warming up or reconnecting.
+                continue
+            last_seq, jpeg = result
+            yield b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(jpeg)).encode("ascii") + b"\r\n\r\n" + jpeg + b"\r\n"
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
     return StreamingResponse(frames(), media_type="multipart/x-mixed-replace; boundary=frame", headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "X-Accel-Buffering": "no"})
 
 
+<<<<<<< HEAD
 @app.put("/api/camera/anti-theft", dependencies=[Depends(require_admin)])
 def update_camera_anti_theft(payload: CameraAntiTheftUpdate) -> dict[str, Any]:
     """Bật/tắt độc lập; khi bật, người đang ở trong vùng nguy hiểm được đánh giá ngay."""
@@ -387,6 +476,9 @@ def update_camera_anti_theft(payload: CameraAntiTheftUpdate) -> dict[str, Any]:
 
 
 @app.get("/api/camera/zone", dependencies=[Depends(require_admin)])
+=======
+@app.get("/api/camera/zone")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def get_camera_zone() -> dict[str, Any]:
     """Đọc vùng bảo vệ của riêng camera USB ngoài."""
     try:
@@ -399,7 +491,11 @@ def get_camera_zone() -> dict[str, Any]:
         raise HTTPException(status_code=503, detail=f"Không đọc được vùng bảo vệ: {exc}") from exc
 
 
+<<<<<<< HEAD
 @app.put("/api/camera/zone", dependencies=[Depends(require_admin)])
+=======
+@app.put("/api/camera/zone")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def update_camera_zone(payload: CameraZoneUpdate) -> dict[str, Any]:
     """Lưu vùng bảo vệ chuẩn hóa (0–1) cho pipeline camera USB + YOLO."""
     try:
@@ -420,7 +516,11 @@ def update_camera_zone(payload: CameraZoneUpdate) -> dict[str, Any]:
         raise HTTPException(status_code=503, detail=f"Không thể cập nhật vùng bảo vệ: {exc}") from exc
 
 
+<<<<<<< HEAD
 @app.get("/api/camera/heatmap", dependencies=[Depends(require_admin_query)])
+=======
+@app.get("/api/camera/heatmap")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def camera_heatmap() -> Response:
     """Ảnh nhiệt mật độ xuất hiện người, chỉ dựa trên camera USB ngoài."""
     try:
@@ -437,7 +537,11 @@ def camera_heatmap() -> Response:
         raise HTTPException(status_code=503, detail=f"Không tạo được heatmap camera: {exc}") from exc
 
 
+<<<<<<< HEAD
 @app.get("/api/camera/evidence/{filename}", dependencies=[Depends(require_admin_query)])
+=======
+@app.get("/api/camera/evidence/{filename}")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def camera_evidence(filename: str) -> FileResponse:
     """Phục vụ ảnh bằng chứng do camera USB tạo; chỉ chấp nhận tên JPEG UUID."""
     if not re.fullmatch(r"[0-9a-f]{32}\.jpg", filename):
@@ -455,7 +559,11 @@ def camera_evidence(filename: str) -> FileResponse:
         raise HTTPException(status_code=503, detail=f"Không đọc được ảnh bằng chứng: {exc}") from exc
 
 
+<<<<<<< HEAD
 @app.get("/api/camera/snapshot", dependencies=[Depends(require_admin_query)])
+=======
+@app.get("/api/camera/snapshot")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def camera_snapshot() -> Response:
     """Ảnh JPEG mới nhất từ webcam USB, không vẽ overlay AI; dùng kiểm tra/căn chỉnh."""
     try:
@@ -473,6 +581,7 @@ def camera_snapshot() -> Response:
 
 
 def _sync_usb_camera_events(events: list[dict[str, Any]]) -> None:
+<<<<<<< HEAD
     """Persist detector events asynchronously; source_event_id makes insertion idempotent."""
     if not events:
         return
@@ -521,6 +630,54 @@ def camera_events(limit: int = Query(default=30, ge=1, le=100)) -> list[dict[str
 
 
 @app.get("/api/cards", dependencies=[Depends(require_admin)])
+=======
+    """Đưa sự kiện từ worker USB vào bảng cảnh báo KhoAI, không ghi lặp khi UI poll."""
+    if not events:
+        return
+    with db_session() as db:
+        for event in reversed(events):
+            source_time = str(event.get("event_at") or "")
+            event_type = str(event.get("type") or "camera_event")
+            track_id = event.get("track_id")
+            if not source_time:
+                continue
+            # Vào/ra vùng bình thường vẫn nằm trong lịch sử camera, nhưng không biến
+            # thành cảnh báo đỏ/vàng toàn hệ thống nếu không có rủi ro thực tế.
+            if event_type in {"zone_entry", "zone_exit"} and str(event.get("severity", "low")).lower() in {"low", "info", "informational"}:
+                continue
+            marker = f'"camera_event_at": "{source_time}"'
+            exists = db.execute(
+                "SELECT id FROM security_events WHERE event_type=? AND track_id IS ? AND details_json LIKE ? LIMIT 1",
+                (event_type, track_id, f"%{marker}%"),
+            ).fetchone()
+            if exists:
+                continue
+            original_severity = str(event.get("severity", "medium")).lower()
+            severity = "severe" if original_severity in {"high", "critical", "severe"} else "warning"
+            details = {"source": "usb_external", "camera_event_at": source_time,
+                       "track_id": track_id, "zone": "external", **event}
+            db.execute(
+                "INSERT INTO security_events(event_at,event_type,track_id,severity,message,details_json) VALUES(?,?,?,?,?,?)",
+                (source_time, event_type, track_id, severity,
+                 str(event.get("message") or "Sự kiện camera USB ngoài."), json.dumps(details, ensure_ascii=False)),
+            )
+
+
+@app.get("/api/camera/events")
+def camera_events(limit: int = Query(default=30, ge=1, le=100)) -> list[dict[str, Any]]:
+    """Lịch sử sự kiện riêng của camera USB; đồng bộ vào bảng cảnh báo hiện có của KhoAI."""
+    try:
+        from ai.person_detector import detector
+        events = detector.get_events(limit)
+        _sync_usb_camera_events(events)
+        return events
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Không đọc được sự kiện camera USB")
+        raise HTTPException(status_code=503, detail=f"Không đọc được sự kiện camera: {exc}") from exc
+
+
+@app.get("/api/cards")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def list_cards() -> list[dict[str, Any]]:
     with db_session() as db:
         rows = db.execute("SELECT uid, name, age, active, created_at, expires_at, daily_quota, used_today, color FROM cards ORDER BY created_at DESC").fetchall()
@@ -535,7 +692,11 @@ def list_cards() -> list[dict[str, Any]]:
     return cards
 
 
+<<<<<<< HEAD
 @app.post("/api/cards", status_code=201, dependencies=[Depends(require_admin)])
+=======
+@app.post("/api/cards", status_code=201)
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def create_card(payload: CardCreate) -> dict[str, Any]:
     uid, name, created_at = normalize_uid(payload.uid), payload.name.strip(), now_business()
     if not name:
@@ -545,7 +706,11 @@ def create_card(payload: CardCreate) -> dict[str, Any]:
             db.execute("""INSERT INTO cards(uid, name, age, active, created_at, expires_at, daily_quota,
                        used_today, last_reset_date, color) VALUES (?, ?, ?, 1, ?, ?, ?, 0, ?, ?)""",
                        (uid, name, payload.age if payload.age is not None else 0, created_at, payload.expires_at, payload.daily_quota,
+<<<<<<< HEAD
                         today_business(), payload.color))
+=======
+                        date.today().isoformat(), payload.color))
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
             db.execute("DELETE FROM card_permissions WHERE uid = ?", (uid,))
             for zone in payload.zones:
                 if zone not in {"entry", "exit", "important", "critical"}:
@@ -554,7 +719,11 @@ def create_card(payload: CardCreate) -> dict[str, Any]:
             if payload.item and payload.boxes:
                 db.execute("INSERT INTO pickup_orders(uid,item,boxes,zone,day) VALUES(?,?,?,?,?)",
                            (uid, payload.item.strip(), payload.boxes, payload.zones[0] if payload.zones else None,
+<<<<<<< HEAD
                             today_business()))
+=======
+                            date.today().isoformat()))
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="UID này đã được cấp thẻ.") from exc
     return {"uid": uid, "name": name, "age": payload.age if payload.age is not None else 0, "active": True, "created_at": created_at,
@@ -562,6 +731,7 @@ def create_card(payload: CardCreate) -> dict[str, Any]:
             "color": payload.color, "zones": payload.zones, "item": payload.item, "boxes": payload.boxes}
 
 
+<<<<<<< HEAD
 @app.post("/api/access/check", dependencies=[Depends(require_admin)])
 def check_access(payload: AccessCheck) -> dict[str, Any]:
     uid = normalize_uid(payload.uid)
@@ -587,6 +757,28 @@ def check_access(payload: AccessCheck) -> dict[str, Any]:
                 changed = db.execute("UPDATE cards SET used_today=used_today+1 WHERE uid=? AND active=1 AND used_today<daily_quota", (uid,)).rowcount
                 if changed != 1:
                     reason = "quota_exhausted"
+=======
+@app.post("/api/access/check")
+def check_access(payload: AccessCheck) -> dict[str, Any]:
+    uid = normalize_uid(payload.uid)
+    with db_session() as db:
+        card = db.execute("SELECT * FROM cards WHERE uid = ?", (uid,)).fetchone()
+        name, reason = (card["name"], None) if card else (None, "unknown_card")
+        today = date.today().isoformat()
+        if card:
+            if not card["active"]:
+                reason = "inactive_card"
+            elif card["last_reset_date"] != today:
+                db.execute("UPDATE cards SET used_today=0,last_reset_date=? WHERE uid=?", (today, uid))
+            if reason is None and card["expires_at"] and card["expires_at"] < today:
+                reason = "expired"
+            if reason is None:
+                fresh = db.execute("SELECT used_today,daily_quota FROM cards WHERE uid=?", (uid,)).fetchone()
+                if fresh["used_today"] >= fresh["daily_quota"]:
+                    reason = "quota_exhausted"
+            if reason is None:
+                db.execute("UPDATE cards SET used_today=used_today+1 WHERE uid=?", (uid,))
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         allowed = reason is None
         result = "allow" if allowed else "deny"
         db.execute("INSERT INTO access_logs(uid, card_name, event_at, result) VALUES (?, ?, ?, ?)",
@@ -611,6 +803,7 @@ def check_access(payload: AccessCheck) -> dict[str, Any]:
             "note": "Quẹt thẻ không tự xác định được ID người trên camera; cần truyền track_id nếu muốn liên kết."}
 
 
+<<<<<<< HEAD
 @app.post("/api/access/associate", dependencies=[Depends(require_admin)])
 def associate_access_track(payload: TrackAssociation) -> dict[str, Any]:
     """Operator explicitly links a recently scanned valid UID to a visible USB-camera track ID."""
@@ -637,27 +830,45 @@ def associate_access_track(payload: TrackAssociation) -> dict[str, Any]:
 
 
 @app.get("/api/logs", dependencies=[Depends(require_admin)])
+=======
+@app.get("/api/logs")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def list_logs(limit: int = Query(default=100, ge=1, le=500)) -> list[dict[str, Any]]:
     with db_session() as db:
         rows = db.execute("SELECT id, uid, card_name, event_at, result FROM access_logs ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
     return [dict(row) for row in rows]
 
 
+<<<<<<< HEAD
 @app.get("/api/stats", dependencies=[Depends(require_admin)])
+=======
+@app.get("/api/stats")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def stats() -> dict[str, int]:
     today = datetime.now(BUSINESS_TZ).date().isoformat()
     with db_session() as db:
         cards = db.execute("SELECT COUNT(*) FROM cards WHERE active = 1").fetchone()[0]
         scans = db.execute("SELECT COUNT(*) FROM access_logs WHERE substr(event_at, 1, 10) = ?", (today,)).fetchone()[0]
         denied = db.execute("SELECT COUNT(*) FROM access_logs WHERE substr(event_at, 1, 10) = ? AND result = 'deny'", (today,)).fetchone()[0]
+<<<<<<< HEAD
         alerts = db.execute("SELECT COUNT(*) FROM security_events WHERE substr(event_at, 1, 10) = ? AND severity IN ('warning','severe')", (today,)).fetchone()[0]
+=======
+        alerts = db.execute("SELECT COUNT(*) FROM security_events WHERE substr(event_at, 1, 10) = ?", (today,)).fetchone()[0]
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     return {"active_cards": cards, "scans_today": scans, "denied_today": denied, "alerts_today": alerts}
 
 
 
 # [INTEGRATED] Compatibility endpoints from KHO.DOAN2; the KhoAI database remains authoritative.
 @app.post("/api/rfid/scan")
+<<<<<<< HEAD
 def rfid_scan(payload: RFIDScan, _: None = Depends(require_device_key)) -> dict[str, Any]:
+=======
+def rfid_scan(payload: RFIDScan, x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> dict[str, Any]:
+    configured_key = os.getenv("KHOAI_API_KEY", "").strip()
+    if configured_key and (not x_api_key or not hmac.compare_digest(x_api_key, configured_key)):
+        raise HTTPException(status_code=401, detail="API key không hợp lệ hoặc chưa được cung cấp.")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     result = check_access(AccessCheck(uid=payload.uid))
     return {"allow": result["allowed"], "reason": result.get("reason"),
             "name": result.get("name"), "alarm": current_alarm_level()}
@@ -671,7 +882,11 @@ def current_alarm_level() -> str:
     return "severe" if "severe" in levels else "warning" if levels else "off"
 
 
+<<<<<<< HEAD
 @app.post("/api/device/heartbeat", dependencies=[Depends(require_device_key)])
+=======
+@app.post("/api/device/heartbeat")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def device_heartbeat(payload: DeviceHeartbeat) -> dict[str, str]:
     with db_session() as db:
         db.execute("""INSERT INTO device_heartbeats(device_id,last_seen,alarm) VALUES(?,?,?)
@@ -680,6 +895,7 @@ def device_heartbeat(payload: DeviceHeartbeat) -> dict[str, str]:
     return {"alarm": current_alarm_level()}
 
 
+<<<<<<< HEAD
 @app.get("/api/alerts", dependencies=[Depends(require_admin)])
 def list_alerts(
     limit: int = Query(default=100, ge=1, le=500),
@@ -696,6 +912,14 @@ def list_alerts(
         rows = db.execute(f"""SELECT e.*, CASE WHEN a.event_id IS NULL THEN 0 ELSE 1 END AS handled
             FROM security_events e LEFT JOIN acknowledged_events a ON a.event_id=e.id
             WHERE {severity_sql} ORDER BY e.id DESC LIMIT ?""", (limit,)).fetchall()
+=======
+@app.get("/api/alerts")
+def list_alerts(limit: int = Query(default=100, ge=1, le=500)) -> list[dict[str, Any]]:
+    with db_session() as db:
+        rows = db.execute("""SELECT e.*, CASE WHEN a.event_id IS NULL THEN 0 ELSE 1 END AS handled
+            FROM security_events e LEFT JOIN acknowledged_events a ON a.event_id=e.id
+            ORDER BY e.id DESC LIMIT ?""", (limit,)).fetchall()
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     result = []
     for row in rows:
         item = dict(row)
@@ -714,7 +938,11 @@ def list_alerts(
     return result
 
 
+<<<<<<< HEAD
 @app.get("/api/scans", dependencies=[Depends(require_admin)])
+=======
+@app.get("/api/scans")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def list_scans_compat(limit: int = Query(default=100, ge=1, le=500)) -> list[dict[str, Any]]:
     """Compatibility response for the selected KHO.DOAN2 web UI."""
     with db_session() as db:
@@ -736,7 +964,11 @@ def list_scans_compat(limit: int = Query(default=100, ge=1, le=500)) -> list[dic
     return records
 
 
+<<<<<<< HEAD
 @app.delete("/api/cards/{uid}", dependencies=[Depends(require_admin)])
+=======
+@app.delete("/api/cards/{uid}")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def delete_card_compat(uid: str) -> dict[str, Any]:
     """Delete a card from the selected web UI without deleting historical access/security logs."""
     normalized = normalize_uid(uid)
@@ -750,7 +982,11 @@ def delete_card_compat(uid: str) -> dict[str, Any]:
     return {"ok": True}
 
 
+<<<<<<< HEAD
 @app.post("/api/alerts/{event_id}/ack", dependencies=[Depends(require_admin)])
+=======
+@app.post("/api/alerts/{event_id}/ack")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def acknowledge_alert(event_id: int) -> dict[str, Any]:
     with db_session() as db:
         exists = db.execute("SELECT id FROM security_events WHERE id=?", (event_id,)).fetchone()
@@ -761,22 +997,36 @@ def acknowledge_alert(event_id: int) -> dict[str, Any]:
     return {"ok": True, "alarm": current_alarm_level()}
 
 
+<<<<<<< HEAD
 @app.get("/api/rfid/last-unknown", dependencies=[Depends(require_admin)])
+=======
+@app.get("/api/rfid/last-unknown")
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def last_unknown_card() -> dict[str, Any]:
     with db_session() as db:
         row = db.execute("SELECT uid,event_at FROM access_logs WHERE result='deny' ORDER BY id DESC").fetchone()
     return {"uid": row["uid"] if row else None, "ts": row["event_at"] if row else None}
 
 
+<<<<<<< HEAD
 @app.get("/api/status", dependencies=[Depends(require_admin)])
 def integrated_status() -> dict[str, Any]:
     today = today_business()
+=======
+@app.get("/api/status")
+def integrated_status() -> dict[str, Any]:
+    today = date.today().isoformat()
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     with db_session() as db:
         card_count = db.execute("SELECT COUNT(*) FROM cards").fetchone()[0]
         scan_count = db.execute("SELECT COUNT(*) FROM access_logs WHERE substr(event_at,1,10)=?", (today,)).fetchone()[0]
         open_alerts = db.execute("""SELECT COUNT(*) FROM security_events e
+<<<<<<< HEAD
             WHERE e.severity IN ('warning','severe')
             AND e.id NOT IN (SELECT event_id FROM acknowledged_events)""").fetchone()[0]
+=======
+            WHERE e.id NOT IN (SELECT event_id FROM acknowledged_events)""").fetchone()[0]
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         device = db.execute("SELECT * FROM device_heartbeats ORDER BY last_seen DESC LIMIT 1").fetchone()
         orders = db.execute("SELECT COALESCE(SUM(boxes),0) FROM pickup_orders WHERE day=?", (today,)).fetchone()[0]
     online = False
@@ -790,6 +1040,7 @@ def integrated_status() -> dict[str, Any]:
     outside["real_minutes"] = round(float(outside.get("max_seconds", 0)) * EXTERNAL_TIME_SCALE / 60, 1)
     return {"device_online": online, "alarm": current_alarm_level(), "cards": card_count,
             "scans_today": scan_count, "open_alerts": open_alerts, "authorized_boxes_today": orders,
+<<<<<<< HEAD
             "time_scale": EXTERNAL_TIME_SCALE, "time_scale_mode": "DEMO" if EXTERNAL_TIME_SCALE != 1 else "REAL", "outside": outside, "inside": _external_camera_state["inside"]}
 
 
@@ -798,6 +1049,11 @@ def _scans_recently_allowed(window_seconds: int = 120) -> int:
     with db_session() as db:
         return int(db.execute("SELECT COUNT(*) FROM access_logs WHERE result='allow' AND event_at>=?", (cutoff,)).fetchone()[0])
 
+=======
+            "time_scale": EXTERNAL_TIME_SCALE, "outside": outside, "inside": _external_camera_state["inside"]}
+
+
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 def _scans_today_allowed() -> int:
     today = datetime.now(BUSINESS_TZ).date().isoformat()
     with db_session() as db:
@@ -818,6 +1074,7 @@ def _external_alert(level: str, kind: str, zone: str | None, message: str, uid: 
         db.execute("INSERT INTO security_events(event_at,event_type,track_id,severity,message,details_json) VALUES(?,?,?,?,?,?)",
                    (now_business(), kind, None, level, message, json.dumps({"zone": zone, "uid": uid, **(details or {})}, ensure_ascii=False)))
 
+<<<<<<< HEAD
 @app.post("/api/events", dependencies=[Depends(require_admin)])
 def ingest_doan2_camera_event(payload: SecurityEventInput) -> dict[str, Any]:
     """Accept events from a compatible external camera script; native YOLO/ByteTrack remains independent."""
@@ -830,6 +1087,19 @@ def ingest_doan2_camera_event(payload: SecurityEventInput) -> dict[str, Any]:
             _external_alert("warning", "possible_tailgating", "A",
                             f"Có {payload.people_in_zone} người trong khung hình và {scanned} lượt quẹt hợp lệ trong 120 giây gần nhất; cần xác minh thủ công.",
                             details={"people_in_zone": payload.people_in_zone, "valid_scans_last_120s": scanned, "heuristic": True})
+=======
+@app.post("/api/events")
+def ingest_doan2_camera_event(payload: SecurityEventInput) -> dict[str, Any]:
+    """Accept events from a compatible external camera script; native YOLO/ByteTrack remains independent."""
+    scanned = _scans_today_allowed()
+    if payload.camera == "outside":
+        _external_camera_state["outside"] = {"people": payload.people_in_zone, "max_seconds": payload.max_seconds, "ts": now_business()}
+        real_minutes = payload.max_seconds * EXTERNAL_TIME_SCALE / 60
+        if payload.people_in_zone > scanned:
+            _external_alert("warning", "tailgating", "A",
+                            f"Camera ngoài ghi nhận {payload.people_in_zone} người nhưng chỉ {scanned} lượt quẹt hợp lệ.",
+                            details={"people_in_zone": payload.people_in_zone, "scans_today": scanned})
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
         if real_minutes >= EXTERNAL_WARN_MINUTES:
             level = "severe" if real_minutes >= EXTERNAL_SEVERE_MINUTES else "warning"
             _external_alert(level, "loitering", "A", f"Phát hiện đứng lâu ở vùng A khoảng {real_minutes:.1f} phút.",

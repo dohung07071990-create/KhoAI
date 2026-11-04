@@ -6,7 +6,10 @@ __pycache__/
 *.sqlite3-wal
 yolov8n.pt
 .DS_Store
+<<<<<<< HEAD
 
 .env
 data/
 .pytest_cache/
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920

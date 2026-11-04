@@ -18,7 +18,10 @@ import json
 import sys
 import urllib.error
 import urllib.request
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,21 +44,34 @@ def on_mouse(event, x, y, flags, param):
         points.append((x, y))
 
 
+<<<<<<< HEAD
 def fetch_snapshot(server: str, token: str | None = None) -> np.ndarray | None:
     try:
         url = f"{server.rstrip('/')}/api/camera/snapshot"
         request = urllib.request.Request(url, headers={"X-Admin-Token": token} if token else {})
         with urllib.request.urlopen(request, timeout=5) as resp:
+=======
+def fetch_snapshot(server: str) -> np.ndarray | None:
+    try:
+        with urllib.request.urlopen(f"{server.rstrip('/')}/api/camera/snapshot.jpg", timeout=5) as resp:
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
             data = np.frombuffer(resp.read(), dtype=np.uint8)
         return cv2.imdecode(data, cv2.IMREAD_COLOR)
     except (urllib.error.URLError, OSError, ValueError):
         return None
 
 
+<<<<<<< HEAD
 def push_zone(server: str, normalized: list[list[float]], size: tuple[int, int], token: str | None = None) -> None:
     body = json.dumps({"points": normalized, "frame_size": [size[0], size[1]]}).encode()
     req = urllib.request.Request(f"{server.rstrip('/')}/api/camera/zone", data=body, method="PUT",
                                  headers={"Content-Type": "application/json", **({"X-Admin-Token": token} if token else {})})
+=======
+def push_zone(server: str, normalized: list[list[float]], size: tuple[int, int]) -> None:
+    body = json.dumps({"points": normalized, "frame_size": [size[0], size[1]]}).encode()
+    req = urllib.request.Request(f"{server.rstrip('/')}/api/camera/zone", data=body, method="PUT",
+                                 headers={"Content-Type": "application/json"})
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     with urllib.request.urlopen(req, timeout=5) as resp:
         resp.read()
 
@@ -64,6 +80,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Vẽ vùng cấm KhoAI")
     parser.add_argument("--server", help="URL server đang chạy, ví dụ http://127.0.0.1:3000")
     parser.add_argument("--image", help="vẽ trên ảnh có sẵn thay vì camera")
+<<<<<<< HEAD
     parser.add_argument("--token", help="KHOAI_ADMIN_TOKEN; mặc định đọc từ biến môi trường")
     parser.add_argument("--camera", help="index/URL camera (mặc định lấy từ CAMERA_INDEX, auto nếu không đặt)")
     args = parser.parse_args()
@@ -71,6 +88,12 @@ def main() -> None:
     if args.server and not admin_token:
         raise SystemExit("Thiếu token: dùng --token hoặc đặt biến môi trường KHOAI_ADMIN_TOKEN.")
 
+=======
+    parser.add_argument("--camera", help="index/URL camera (mặc định lấy từ CAMERA_INDEX, auto nếu không đặt)")
+    args = parser.parse_args()
+
+    import os
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     cam = None
     static_frame: np.ndarray | None = None
     if args.image:
@@ -98,7 +121,11 @@ def main() -> None:
                     frame = f
             elif args.server:
                 if tick % 6 == 0:  # ~ mỗi 0,3 giây
+<<<<<<< HEAD
                     f = fetch_snapshot(args.server, admin_token)
+=======
+                    f = fetch_snapshot(args.server)
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
                     if f is not None:
                         frame = f
                 tick += 1
@@ -142,7 +169,11 @@ def main() -> None:
                     continue
                 if args.server:
                     try:
+<<<<<<< HEAD
                         push_zone(args.server, normalized, (w, h), admin_token)
+=======
+                        push_zone(args.server, normalized, (w, h))
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
                         print(f"Đã gửi vùng lên server {args.server} (và lưu vào {ZONE_FILE}).")
                     except (urllib.error.URLError, OSError) as exc:
                         print(f"Không gửi được lên server: {exc}")

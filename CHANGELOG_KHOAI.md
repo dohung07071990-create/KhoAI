@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KhoAI Changelog
 
 ## v0.5.4 – Authentication race and credential hardening
@@ -17,6 +18,8 @@
 - Tắt OpenAPI docs mặc định; có thể bật trong môi trường phát triển bằng KHOAI_ENABLE_OPENAPI=1.
 - Tách pytest/httpx sang requirements-dev.txt để Docker image production không cài thư viện test.
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 # Changelog — KhoAI
 
 ## Bản nâng cấp prototype 0.2.0
@@ -55,6 +58,7 @@
 - `ai/draw_zone.py`: dùng chung hàm mở camera, thêm `--server` (vẽ khi server đang chạy), undo, hiển thị vùng cũ.
 - Phần init: `.env` thực sự được đọc (`ai/envfile.py`), `ai/__init__.py`, `backend/__init__.py`, `backend/app/__init__.py`, `lifespan` thay `on_event`, `init_db()` chạy trong lifespan.
 - API mới: `GET /api/camera/devices`, `PUT /api/camera/source`, `GET /api/camera/snapshot.jpg`.
+<<<<<<< HEAD
 
 
 ## Bản tổng hợp camera USB + nền tảng đánh giá hành vi
@@ -112,3 +116,5 @@
 - Khôi phục helper `post()` dùng chung `api()` để giữ xác thực cho các thao tác POST JSON (xác nhận cảnh báo, cấp thẻ).
 - Bổ sung kiểm thử hồi quy xác minh method, header JSON, admin token và request body của `post()`.
 - Bổ sung thông báo lỗi trên giao diện khi xác nhận cảnh báo hoặc xóa thẻ thất bại.
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920

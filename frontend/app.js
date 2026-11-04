@@ -1,5 +1,6 @@
 const $ = s => document.querySelector(s);
 const ZN = {entry:"Nhập", exit:"Xuất", important:"Quan trọng", critical:"Cực kỳ quan trọng", A:"A", door:"Cửa"};
+<<<<<<< HEAD
 const REASON = {unknown_card:"Thẻ lạ", expired:"Hết hạn", quota_exhausted:"Hết lượt", invalid_expiry:"Ngày hết hạn không hợp lệ", inactive_card:"Thẻ đã bị vô hiệu hóa"};
 const KIND = {possible_tailgating:"Có thể đi theo người khác", tailgating:"Người đi lọt", loitering:"Đứng lâu", wrong_zone:"Sai vùng", headcount:"Lệch số người", boxes_over:"Thừa thùng"};
 const CAMERA_EVENT_LABEL = {unauthorized_entry:"Xâm nhập vùng bảo vệ", zone_entry:"Đi vào vùng bảo vệ", zone_exit:"Rời vùng bảo vệ", long_dwell:"Đứng lâu trong vùng", alarm_state_changed:"Thay đổi trạng thái an ninh", armed_occupied_zone:"Đã có người khi bật chống trộm", anti_theft_enabled:"Bật chống trộm", anti_theft_disabled:"Tắt chống trộm",camera_offline:"Camera USB mất kết nối",camera_recovered:"Camera USB đã kết nối lại"};
@@ -76,6 +77,15 @@ const post = (u, b) => api(u, {
   headers: {"Content-Type": "application/json"},
   body: JSON.stringify(b)
 });
+=======
+const REASON = {unknown_card:"Thẻ lạ", expired:"Hết hạn", quota_exhausted:"Hết lượt"};
+const KIND = {tailgating:"Người đi lọt", loitering:"Đứng lâu", wrong_zone:"Sai vùng", headcount:"Lệch số người", boxes_over:"Thừa thùng"};
+const CAMERA_EVENT_LABEL = {unauthorized_entry:"Xâm nhập vùng bảo vệ", zone_entry:"Đi vào vùng bảo vệ", zone_exit:"Rời vùng bảo vệ", long_dwell:"Đứng lâu trong vùng"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const api = async (u, o) => { const r = await fetch(u, o); if (!r.ok) throw new Error((await r.json()).detail || r.status); return r.json(); };
+const post = (u, b) => api(u, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(b)});
+
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 // Tab
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
@@ -86,7 +96,11 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
 // Địa chỉ camera: nhớ trong trình duyệt
 let heatmapEnabled = false;
 const heatmapButton = $("#cam-heatmap-toggle");
+<<<<<<< HEAD
 [["out","cam-out"]].forEach(([k,id]) => {
+=======
+[["out","cam-out"],["in","cam-in"]].forEach(([k,id]) => {
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
   const inp = $("#cam-"+k+"-url"), img = $("#"+id+" img");
   // Camera ngoài mặc định lấy trực tiếp luồng USB đã được YOLO xử lý từ backend KhoAI.
   // Người dùng vẫn có thể thay bằng URL MJPEG của một camera IP nếu cần.
@@ -98,11 +112,19 @@ const heatmapButton = $("#cam-heatmap-toggle");
       heatmapEnabled = false;
       if (heatmapButton) { heatmapButton.setAttribute("aria-pressed", "false"); heatmapButton.textContent = "Heatmap chuyển động"; }
     }
+<<<<<<< HEAD
     img.src = k === "out" && inp.value.startsWith("/api/camera/") ? withCameraToken(inp.value) : inp.value;
   };
   inp.onchange = apply;
   if (k === "out" && !localStorage.getItem("cam-out")) img.src = withCameraToken(defaultUrl);
   else if (inp.value) img.src = k === "out" && inp.value.startsWith("/api/camera/") ? withCameraToken(inp.value) : inp.value;
+=======
+    img.src = inp.value;
+  };
+  inp.onchange = apply;
+  if (k === "out" && !localStorage.getItem("cam-out")) img.src = defaultUrl;
+  else if (inp.value) img.src = inp.value;
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 });
 
 // Camera USB ngoài: thống kê pipeline, vẽ vùng bảo vệ và lịch sử sự kiện.
@@ -116,15 +138,26 @@ if (heatmapButton && outImage) {
     heatmapButton.setAttribute("aria-pressed", String(heatmapEnabled));
     heatmapButton.textContent = heatmapEnabled ? "Quay lại video AI" : "Heatmap chuyển động";
     if (heatmapEnabled) {
+<<<<<<< HEAD
       outImage.src = withCameraToken(`/api/camera/heatmap?t=${Date.now()}`);
     } else {
       const saved = localStorage.getItem("cam-out") || "/api/camera/stream";
       outImage.src = saved.startsWith("/api/camera/") ? withCameraToken(saved) : saved;
+=======
+      outImage.src = `/api/camera/heatmap?t=${Date.now()}`;
+    } else {
+      const saved = localStorage.getItem("cam-out") || "/api/camera/stream";
+      outImage.src = saved;
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     }
   };
   setInterval(() => {
     if (heatmapEnabled && !document.querySelector("#outside").hidden) {
+<<<<<<< HEAD
       outImage.src = withCameraToken(`/api/camera/heatmap?t=${Date.now()}`);
+=======
+      outImage.src = `/api/camera/heatmap?t=${Date.now()}`;
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     }
   }, 1500);
 }
@@ -155,6 +188,7 @@ function drawCameraZone() {
   const ctx = outOverlay.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, rect.width, rect.height);
+<<<<<<< HEAD
   const basePoints = zoneEditing ? zoneDraft : cameraZone;
   const activeFactor = (!zoneEditing && window.cameraZonePeriod === "night") ? 1.15 : 1.0;
   const baseCx = cameraZone.reduce((sum, p) => sum + p[0], 0) / Math.max(1, cameraZone.length);
@@ -162,6 +196,9 @@ function drawCameraZone() {
   const pts = (!zoneEditing && activeFactor !== 1)
     ? basePoints.map(([x, y]) => [Math.max(0, Math.min(1, baseCx + (x - baseCx) * activeFactor)), Math.max(0, Math.min(1, baseCy + (y - baseCy) * activeFactor))])
     : basePoints;
+=======
+  const pts = zoneEditing ? zoneDraft : cameraZone;
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
   $("#cam-zone-edit").disabled = zoneEditing;
   $("#cam-zone-undo").disabled = !zoneEditing || !zoneDraft.length;
   $("#cam-zone-save").disabled = !zoneEditing || zoneDraft.length < 3;
@@ -177,6 +214,7 @@ function drawCameraZone() {
   for (let i = 1; i < px.length; i++) ctx.lineTo(px[i][0], px[i][1]);
   if (px.length >= 3) { ctx.closePath(); ctx.fill(); }
   ctx.stroke();
+<<<<<<< HEAD
   // Vùng WARNING mở rộng quanh vùng ALARM; ban đêm nới rộng thêm theo lịch.
   const factor = 1.12;
   const cx = baseCx;
@@ -189,6 +227,8 @@ function drawCameraZone() {
   ctx.beginPath(); ctx.moveTo(warningPx[0][0], warningPx[0][1]);
   warningPx.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
   ctx.closePath(); ctx.stroke(); ctx.restore();
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
   px.forEach(([x, y], i) => {
     ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fillStyle = zoneEditing ? "#00e5ff" : "#fff"; ctx.fill();
@@ -261,6 +301,7 @@ $("#cam-zone-save").onclick = async () => {
   }
 };
 
+<<<<<<< HEAD
 const antiTheftButton = $("#cam-anti-theft-toggle");
 if (antiTheftButton) {
   antiTheftButton.onclick = async () => {
@@ -282,10 +323,13 @@ if (antiTheftButton) {
   };
 }
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 async function refreshUsbCamera() {
   try {
     const s = await api("/api/camera/status");
     if (Array.isArray(s.frame_size)) cameraFrameSize = s.frame_size;
+<<<<<<< HEAD
     const trackSelect = $("#associate-track");
     if (trackSelect) {
       const selected = trackSelect.value;
@@ -306,6 +350,8 @@ async function refreshUsbCamera() {
     const zonePeriod = $("#cam-zone-period");
     if (zonePeriod) zonePeriod.textContent = s.zone_period === "night" ? "Ban đêm (18:00–05:59)" : "Ban ngày (06:00–17:59)";
     drawCameraZone();
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     $("#cam-read-fps").textContent = s.capture_fps == null ? "–" : s.capture_fps;
     $("#cam-ai-fps").textContent = s.process_fps == null ? (s.fps ?? "–") : s.process_fps;
     $("#cam-latency").textContent = s.process_latency_ms == null ? "–" : `${s.process_latency_ms} ms`;
@@ -328,7 +374,11 @@ async function refreshUsbCamera() {
         <span><b>${esc(CAMERA_EVENT_LABEL[ev.type] || ev.type || "Sự kiện camera")}</b>
         <small>${esc(String(ev.event_at || "").replace("T", " "))} · ID ${esc(ev.track_id ?? "chưa có ID")} · ${esc(ev.message || "")}</small>
         ${ev.dwell_seconds != null ? `<small>Thời gian trong vùng: ${esc(ev.dwell_seconds)} giây</small>` : ""}
+<<<<<<< HEAD
         ${ev.evidence_url ? `<a class="camera-evidence-link" href="${esc(withCameraToken(ev.evidence_url))}" target="_blank" rel="noopener"><img class="camera-evidence" loading="lazy" src="${esc(withCameraToken(ev.evidence_url))}" alt="Ảnh bằng chứng sự kiện camera">Xem ảnh bằng chứng</a>` : ""}</span>
+=======
+        ${ev.evidence_url ? `<a class="camera-evidence-link" href="${esc(ev.evidence_url)}" target="_blank" rel="noopener"><img class="camera-evidence" loading="lazy" src="${esc(ev.evidence_url)}" alt="Ảnh bằng chứng sự kiện camera">Xem ảnh bằng chứng</a>` : ""}</span>
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
       </li>`).join("") : "<li>Chưa ghi nhận sự kiện camera ngoài.</li>";
   } catch (err) {
     $("#cam-event-list").innerHTML = `<li>Không tải được sự kiện camera: ${esc(err.message)}</li>`;
@@ -336,6 +386,7 @@ async function refreshUsbCamera() {
 }
 
 if (outImage) {
+<<<<<<< HEAD
   let reconnectDelay = 2000;
   let reconnectTimer = null;
   outImage.addEventListener("load", () => {
@@ -367,6 +418,16 @@ if (associationForm) associationForm.addEventListener("submit", async event => {
   } catch (err) { message.textContent = `Không liên kết được: ${err.message}`; }
 });
 
+=======
+  outImage.addEventListener("load", drawCameraZone);
+  outImage.addEventListener("error", () => {
+    // Tự thử kết nối lại với luồng backend mặc định nếu trình duyệt mất MJPEG.
+    const input = $("#cam-out-url");
+    if (heatmapEnabled || !input || input.value !== "/api/camera/stream") return;
+    setTimeout(() => { outImage.src = `/api/camera/stream?retry=${Date.now()}`; }, 2000);
+  });
+}
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 loadCameraZone();
 refreshUsbCamera();
 setInterval(refreshUsbCamera, 2000);
@@ -384,7 +445,11 @@ async function refresh() {
 
   $("#o-people").textContent = s.outside.people; $("#o-scanned").textContent = s.outside.scanned;
   $("#o-sec").textContent = s.outside.max_seconds + " giây";
+<<<<<<< HEAD
   $("#o-real").textContent = `${s.time_scale_mode === "DEMO" ? "CHẾ ĐỘ DEMO · " : ""}≈ ${s.outside.real_minutes} phút ngoài đời (1 giây = ${s.time_scale} giây)`;
+=======
+  $("#o-real").textContent = `≈ ${s.outside.real_minutes} phút ngoài đời (1 giây = ${s.time_scale} giây)`;
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
   document.querySelectorAll(".z").forEach(z => {
   const ps = s.inside.filter(p => p.zone === z.dataset.z);
@@ -397,6 +462,7 @@ async function refresh() {
 });
 
   $("#alert-list").innerHTML = alerts.length ? alerts.map(a => `
+<<<<<<< HEAD
     <li class="${esc(a.level)} ${a.handled ? "done" : ""}"><span><b>${a.level === "severe" ? "Nghiêm trọng" : "Thường"}</b> · ${esc(KIND[a.kind] || REASON[a.kind] || a.kind)}
       <small>${esc(String(a.ts || "").replace("T"," "))} · vùng ${esc(ZN[a.zone] || a.zone || "–")} · ${esc(a.message)}</small></span>
       ${a.level === "info" ? "Thông tin" : a.handled ? "Đã xử lý" : `<button data-ack="${esc(a.id)}">Đã xử lý</button>`}</li>`).join("") : "<li>Chưa có cảnh báo.</li>";
@@ -407,10 +473,23 @@ async function refresh() {
   $("#card-body").innerHTML = cards.map(c => `<tr><td>${esc(c.uid)}</td><td>${esc(c.name)}</td><td>${esc(c.expires_at || "–")}</td>
     <td>${esc(c.used_today)}/${esc(c.daily_quota)}</td><td>${esc(c.zones.map(z => ZN[z] || z).join(", "))}</td>
     <td>${c.item ? esc(c.item) + " × " + c.boxes : "–"}</td><td>${esc(c.color || "–")}</td>
+=======
+    <li class="${a.level} ${a.handled ? "done" : ""}"><span><b>${a.level === "severe" ? "Nghiêm trọng" : "Thường"}</b> · ${KIND[a.kind] || REASON[a.kind] || a.kind}
+      <small>${a.ts.replace("T"," ")} · vùng ${ZN[a.zone] || "–"} · ${esc(a.message)}</small></span>
+      ${a.handled ? "Đã xử lý" : `<button data-ack="${a.id}">Đã xử lý</button>`}</li>`).join("") : "<li>Chưa có cảnh báo.</li>";
+
+  $("#scan-body").innerHTML = scans.map(r => `<tr><td>${r.ts.replace("T"," ")}</td><td>${esc(r.uid)}</td><td>${esc(r.name || "Không rõ")}</td>
+    <td class="${r.result}">${r.result === "allow" ? "Cho phép" : "Từ chối"}</td><td>${REASON[r.reason] || ""}</td></tr>`).join("");
+
+  $("#card-body").innerHTML = cards.map(c => `<tr><td>${esc(c.uid)}</td><td>${esc(c.name)}</td><td>${c.expires_at || "–"}</td>
+    <td>${c.used_today}/${c.daily_quota}</td><td>${c.zones.map(z => ZN[z]).join(", ")}</td>
+    <td>${c.item ? esc(c.item) + " × " + c.boxes : "–"}</td><td>${c.color || "–"}</td>
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     <td><button data-del="${esc(c.uid)}">Xóa</button></td></tr>`).join("");
 }
 
 document.body.addEventListener("click", async e => {
+<<<<<<< HEAD
   if (e.target.dataset.ack) {
     try {
       await post(`/api/alerts/${e.target.dataset.ack}/ack`, {});
@@ -427,11 +506,19 @@ document.body.addEventListener("click", async e => {
       window.alert("Không thể xóa thẻ: " + err.message);
     }
   }
+=======
+  if (e.target.dataset.ack) { await post(`/api/alerts/${e.target.dataset.ack}/ack`, {}); refresh(); }
+  if (e.target.dataset.del && confirm("Xóa thẻ này?")) { await api(`/api/cards/${e.target.dataset.del}`, {method:"DELETE"}); refresh(); }
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 });
 
 $("#btn-last").onclick = async () => {
   const r = await api("/api/rfid/last-unknown");
+<<<<<<< HEAD
   $("#form-msg").textContent = r.uid ? `Đã điền UID quẹt lúc ${String(r.ts || "").replace("T"," ")}.` : "Chưa có thẻ lạ nào được quẹt.";
+=======
+  $("#form-msg").textContent = r.uid ? `Đã điền UID quẹt lúc ${r.ts.replace("T"," ")}.` : "Chưa có thẻ lạ nào được quẹt.";
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
   if (r.uid) $("#uid").value = r.uid;
 };
 

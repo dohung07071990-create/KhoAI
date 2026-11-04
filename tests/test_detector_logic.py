@@ -18,6 +18,7 @@ from ai.envfile import _parse_line
 W, H = 640, 480
 poly = pd.zone_to_pixels(pd.DEFAULT_ZONE, W, H)
 
+<<<<<<< HEAD
 # 0. Lịch vùng và vùng WARNING mở rộng
 assert pd.scale_zone(pd.DEFAULT_ZONE, 1.1) != pd.DEFAULT_ZONE
 from datetime import datetime
@@ -25,6 +26,8 @@ assert pd.current_zone_period(datetime(2026, 11, 3, 17, 59, tzinfo=pd.BUSINESS_T
 assert pd.current_zone_period(datetime(2026, 11, 3, 18, 0, tzinfo=pd.BUSINESS_TZ)) == "night"
 print("0. lịch vùng OK")
 
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 # 1. Luật vùng
 assert pd.is_box_in_zone((250, 150, 400, 400), (W, H), poly)            # chân trong vùng
 assert not pd.is_box_in_zone((250, 20, 400, 150), (W, H), poly)         # chân ở trên vùng (ngoài)
@@ -73,6 +76,7 @@ class FakeModel:
     predict = track
 
 d = pd.CameraDetector(camera_index=vid, model=FakeModel())
+<<<<<<< HEAD
 # Camera USB offline/recovered: mỗi lần chuyển trạng thái chỉ tạo một sự kiện.
 d._set_camera_health(False, "test offline")
 d._set_camera_health(False, "test offline lặp")
@@ -80,6 +84,8 @@ d._set_camera_health(True)
 health_events = [event["type"] for event in d.get_events()]
 assert health_events.count("camera_offline") == 1, health_events
 assert health_events.count("camera_recovered") == 1, health_events
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 d.start()
 t0 = time.time()
 while not d.status()["camera_available"] and time.time() - t0 < 10: time.sleep(0.1)
@@ -100,12 +106,16 @@ FakeModel.script = ([[250, 150, 400, 400]], [7]); st = settle_until(lambda x: x[
 assert st["person_in_zone"] and st["tracked_person_ids"] == [7], st
 assert d.get_events()[0]["type"] == "unauthorized_entry"
 assert d.get_events()[0].get("evidence_url", "").startswith("/api/camera/evidence/")
+<<<<<<< HEAD
 event_id = d.get_events()[0]["event_id"]
 assert os.path.isfile(os.path.join(tmp, "evidence", event_id + ".jpg"))
 # Bật lại khi người đã ở trong vùng: phải ALARM ngay, không đợi một lần xâm nhập mới.
 d.set_anti_theft(False)
 armed = d.set_anti_theft(True)
 assert armed["alarm_state"] == "ALARM" and 7 in armed["alarm_person_ids"], armed
+=======
+assert os.path.isfile(os.path.join(tmp, "evidence", d.get_events()[0]["event_id"] + ".jpg"))
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 assert d.heatmap_jpeg() is not None
 FakeModel.script = ([[250, 20, 400, 120]], [7]); st = settle_until(lambda x: not x["person_in_zone"])
 assert not st["person_in_zone"], st

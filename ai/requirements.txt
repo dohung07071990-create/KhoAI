@@ -1,4 +1,8 @@
 ultralytics>=8.3,<9
+<<<<<<< HEAD
 opencv-python-headless>=4.10,<5
+=======
+opencv-python>=4.10,<5
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 numpy>=1.26,<3
 lapx>=0.5.5

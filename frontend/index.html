@@ -12,6 +12,10 @@
   <nav id="tabs">
     <button data-t="overview" class="on">Tổng quan</button>
     <button data-t="outside">Camera ngoài</button>
+<<<<<<< HEAD
+=======
+    <button data-t="inside">Camera trong</button>
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     <button data-t="alerts">Cảnh báo <b id="badge" hidden>0</b></button>
     <button data-t="history">Lịch sử</button>
     <button data-t="cards">Thẻ và hồ sơ</button>
@@ -57,7 +61,10 @@
         <button type="button" id="cam-zone-save" disabled>Lưu vùng</button>
         <button type="button" id="cam-zone-cancel" disabled>Hủy</button>
         <button type="button" id="cam-heatmap-toggle" aria-pressed="false">Heatmap chuyển động</button>
+<<<<<<< HEAD
         <button type="button" id="cam-anti-theft-toggle" aria-pressed="true">Tắt chống trộm</button>
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
       </div>
       <p id="cam-zone-msg" role="status">Vùng bảo vệ được lưu ở backend. Bấm “Vẽ vùng bảo vệ” để đặt các điểm mới trên hình camera.</p>
     </div>
@@ -69,6 +76,7 @@
       <div class="stat"><span>Khung hình mới nhất</span><strong id="cam-age">–</strong></div>
       <div class="stat"><span>Người đang nhận diện</span><strong id="cam-detections">0</strong></div>
       <div class="stat"><span>Trạng thái AI</span><strong id="cam-ai-status">Đang kiểm tra</strong></div>
+<<<<<<< HEAD
       <div class="stat"><span>Chống trộm</span><strong id="cam-security-state">SAFE</strong></div>
       <div class="stat"><span>Lịch vùng</span><strong id="cam-zone-period">–</strong></div>
     </div>
@@ -81,6 +89,8 @@
         <button type="submit">Liên kết</button>
       </form>
       <p id="associate-message" role="status"></p>
+=======
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     </div>
     <div class="cam-event-panel">
       <h3>Sự kiện camera ngoài</h3>
@@ -111,6 +121,22 @@
     </label>
   </section>
 
+<<<<<<< HEAD
+=======
+  <section id="inside" hidden>
+    <div class="cam" id="cam-in">
+      <img alt="Camera trong">
+    </div>
+
+    <label class="inline">
+      Địa chỉ camera trong (luồng đã vẽ vùng từ zone_calib.py)
+      <input
+        id="cam-in-url"
+        value="http://localhost:8081/video"
+        placeholder="http://localhost:8081/video">
+    </label>
+  </section>
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
   <section id="alerts" hidden>
     <ul id="alert-list" class="list"></ul>
@@ -228,6 +254,30 @@
 </main>
 
 <script src="app.js"></script>
+<<<<<<< HEAD
 
+=======
+<script>
+/* Camera trong: dùng luồng relay (đã vẽ vùng) từ zone_calib.py.
+   Dùng location.hostname để mở web từ máy khác trong mạng LAN vẫn chạy. */
+(function () {
+  var RELAY = "http://" + location.hostname + ":8081/video";
+  var inp = document.getElementById("cam-in-url");
+  var img = document.querySelector("#cam-in img");
+  if (!inp || !img) return;
+
+  function connect() {
+    img.src = RELAY + "?t=" + Date.now();   // chống cache khi kết nối lại
+  }
+
+  inp.value = RELAY;
+  inp.dispatchEvent(new Event("change"));   // báo cho app.js nếu nó lắng nghe ô này
+  connect();
+
+  // Mất luồng (khởi động lại zone_calib.py...) -> tự thử lại sau 2 giây.
+  img.onerror = function () { setTimeout(connect, 2000); };
+})();
+</script>
+>>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 </body>
 </html>
