@@ -1,0 +1,17 @@
+{
+  "name": "strict",
+  "description": "Thông số khởi đầu nghiêm ngặt hơn; chưa được hiệu chuẩn bằng camera thực.",
+  "settings": {
+    "entry_grace_seconds": 5,
+    "presence_release_seconds": 15,
+    "rfid_ticket_seconds": 10,
+    "suspicious_seconds": 20,
+    "suspicious_approach_count": 2,
+    "handover_max_gap_seconds": 2.5,
+    "handover_match_radius": 0.05,
+    "handover_exclusion_radius": 0.10,
+    "handover_edge_margin_ratio": 0.03,
+    "wrong_zone_grace_seconds": 5
+  },
+  "rfid_grace_extension": false
+}

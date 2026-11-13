@@ -11,16 +11,14 @@ Dùng:
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from typing import Any
 
 from .envfile import load_env_file
 
-<<<<<<< HEAD
-__version__ = "0.5.1"
-=======
-__version__ = "0.3.0"
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
-__all__ = ["detector", "CameraDetector", "load_env_file", "__version__"]
+__version__ = (Path(__file__).resolve().parents[1] / "VERSION.txt").read_text(encoding="utf-8").strip()
+__all__ = ["detector", "CameraDetector", "load_env_file", "__version__"]# pyright: ignore[reportUnsupportedDunderAll]
 
 load_env_file()
 
