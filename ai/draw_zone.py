@@ -142,11 +142,7 @@ def main() -> None:
                     continue
                 if args.server:
                     try:
-<<<<<<< HEAD
                         push_zone(args.server, normalized, (w, h), admin_token)
-=======
-                        push_zone(args.server, normalized, (w, h))
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
                         print(f"Đã gửi vùng lên server {args.server} (và lưu vào {ZONE_FILE}).")
                     except (urllib.error.URLError, OSError) as exc:
                         print(f"Không gửi được lên server: {exc}")

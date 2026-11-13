@@ -1,0 +1,13 @@
+KhoAI v0.6.2-dev.24.66.8 — Verification status
+
+Changes in this version:
+- Decision Engine safely defaults malformed authorization-zone and dwell inputs.
+- RFID ticket operations normalize UID case and common separators.
+- Pending RFID tickets are bounded by KHOAI_RFID_MAX_PENDING_TICKETS (default 1024, capped at 10000); expired tickets are pruned lazily.
+- Telegram slash and callback ACK IDs are constrained to positive SQLite INTEGER values; /ack requires exactly one argument.
+- Telegram message redaction recognizes colon- and space-separated byte-pair UIDs.
+
+Verification:
+- pytest, Docker build, Telegram network operation, camera and ESP32 hardware were not run after these changes.
+- The last user-provided pytest run for dev.24.66.7 reported 438 passed and 2 failed before this version's changes. Do not treat that result as verification of dev.24.66.8.
+- Re-run `python -m pytest -q` before packaging this version.

@@ -98,7 +98,7 @@ def _try_open(source: int | str, backend_name: str, backend_id: int, width: int,
             return None, False
         if isinstance(source, int) or str(source).startswith("/dev/"):  # chỉ chỉnh thông số với webcam thật
             if fourcc:
-                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc))
+                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc)) # type: ignore[attr-defined]
             if width > 0:
                 cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             if height > 0:

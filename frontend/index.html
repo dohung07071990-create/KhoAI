@@ -3,27 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Kho thông minh</title>
+  <title>KHOAI | An ninh kho thông minh</title>
+  <meta name="theme-color" content="#071321">
+  <meta name="description" content="KhoAI - nền tảng giám sát an ninh kho thông minh bằng AI và kiểm soát truy cập RFID.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>Kho thông minh</h1>
-  <nav id="tabs">
-    <button data-t="overview" class="on">Tổng quan</button>
-    <button data-t="outside">Camera ngoài</button>
-<<<<<<< HEAD
-=======
-    <button data-t="inside">Camera trong</button>
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
-    <button data-t="alerts">Cảnh báo <b id="badge" hidden>0</b></button>
-    <button data-t="history">Lịch sử</button>
-    <button data-t="cards">Thẻ và hồ sơ</button>
-  </nav>
+<a class="skip-link" href="#main-content">Bỏ qua tới nội dung</a>
+<header class="topbar">
+  <a class="brand" href="#overview" aria-label="KhoAI - Tổng quan">
+    <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+    <span class="brand-copy"><strong>KHO<span>AI</span></strong><small>NHÀ KHO THÔNG MINH</small></span>
+  </a>
+  <div class="topbar-right">
+    <div class="system-indicator"><i></i><span>HỆ THỐNG GIÁM SÁT</span></div><div class="global-status" aria-live="polite"><span>An ninh: <b id="global-security-state" data-state="UNKNOWN">Chưa xác định</b></span><span>Sự cố đang mở: <b id="global-open-incidents">–</b></span></div>
+    <button type="button" id="alarm-notify-toggle" class="notify-toggle" aria-pressed="false">Bật thông báo ALARM</button><div class="topbar-divider"></div>
+    <div class="operator"><span class="operator-avatar" aria-hidden="true">AD</span><span><b>PHIÊN QUẢN TRỊ</b><small>Quản trị hệ thống</small></span><button type="button" id="btn-logout" class="topbar-logout">Đăng xuất</button></div>
+  </div>
 </header>
-
-<main>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-label">ĐIỀU HƯỚNG</div>
+    <nav id="tabs" aria-label="Điều hướng chính">
+      <button data-t="overview" class="on" aria-current="page"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></span><span>Tổng quan</span></button>
+      <div class="nav-group-label">GIÁM SÁT</div>
+      <button data-t="inside"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M7 5l1.2-2h7.6L17 5"/></svg></span><span>Camera trong</span></button>
+      <button data-t="outside"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h10a3.5 3.5 0 0 1 0 7H9"/><path d="M4 7.5l3-3m-3 3 3 3M20 16.5H10a3.5 3.5 0 0 1 0-7h5"/><path d="M20 16.5l-3-3m3 3-3 3"/></svg></span><span>Camera ngoài & AI</span></button>
+      <div class="nav-group-label">AN NINH & TRUY CẬP</div>
+      <button data-t="alerts"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 21 20H3L12 3.5Z"/><path d="M12 9v5m0 3h.01"/></svg></span><span>Cảnh báo</span><b id="badge" hidden>0</b></button>
+      <button data-t="history"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span><span>Lịch sử truy cập</span></button>
+      <button data-t="admin"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.6v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H6.3v-2.6h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2H15v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2V14h-.2a1.7 1.7 0 0 0-1.5 1Z"/></svg></span><span>Quản trị</span></button>
+      <button data-t="cards"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span>Thẻ & hồ sơ</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-status"><i></i><div><b>KHOAI CONTROL</b><small>Giao diện điều khiển KhoAI</small></div></div>
+      <small class="version-label">GIÁM SÁT NHÀ KHO · v0.6.2</small>
+    </div>
+  </aside>
+<main class="workspace" id="main-content" tabindex="-1">
+  <div class="page-eyebrow"><span class="eyebrow-dot"></span> HỆ THỐNG AN NINH NHÀ KHO <span class="eyebrow-line"></span><span id="local-clock">ĐANG ĐỌC GIỜ HỆ THỐNG</span></div>
   <section id="overview">
+    <div class="section-heading"><div><p>TỔNG QUAN ĐIỀU HÀNH</p><h2>Tổng quan hệ thống</h2><span>Tình trạng vận hành và các chỉ số an ninh hiện tại.</span></div></div>
     <div class="stats">
       <div class="stat">
         <span>ESP32</span>
@@ -46,25 +66,123 @@
         <strong id="s-open">0</strong>
       </div>
     </div>
+
+    <section class="welcome-panel" id="welcome-panel">
+      <div><p class="welcome-kicker">AN NINH THÔNG MINH · GIÁM SÁT THỜI GIAN THỰC</p><h1>Kiểm soát an ninh<br><span>kho thông minh.</span></h1><p class="welcome-desc">Một trung tâm giám sát hợp nhất cho camera AI, kiểm soát truy cập RFID và cảnh báo an ninh.</p><div class="welcome-tags"><span><i></i> THỊ GIÁC AI</span><span><i></i> KIỂM SOÁT TRUY CẬP</span><span><i></i> SỰ KIỆN TRỰC TIẾP</span></div></div>
+      <div class="welcome-visual" aria-hidden="true"><div class="visual-ring ring-one"></div><div class="visual-ring ring-two"></div><div class="visual-core"><span class="core-cross">＋</span><b>AI</b><small>GIÁM SÁT</small></div><div class="visual-location">VỊ TRÍ KHO · HÀ NỘI</div><div class="visual-scan"></div></div>
+      <div class="welcome-index">01 <span>/ TỔNG QUAN</span></div>
+    </section>
+
+    <section class="twin-command" aria-labelledby="twin-title">
+      <div class="twin-head">
+        <div><p class="twin-kicker">NHÀ KHO 3D / BẢN ĐỒ AN NINH</p><h2 id="twin-title">Không gian giám sát nhà kho</h2><span>Mô hình 3D tương tác · trạng thái đồng bộ từ camera AI và hệ thống thiết bị</span></div>
+        <div class="twin-live"><i></i><span id="twin-sync-label">ĐANG CHỜ DỮ LIỆU</span></div>
+      </div>
+      <div class="twin-layout">
+        <div class="twin-stage">
+          <canvas id="warehouse-twin" aria-label="Mô hình 3D minh họa không gian kho"></canvas>
+          <div class="twin-2d-fallback" id="twin-2d-fallback" hidden aria-label="Sơ đồ kho 2D dự phòng">
+            <svg class="warehouse-map-2d" viewBox="0 0 600 390" role="img" aria-labelledby="warehouse-map-title warehouse-map-desc">
+              <title id="warehouse-map-title">Sơ đồ mặt bằng nhà kho</title><desc id="warehouse-map-desc">Bốn phòng A, B, C, D bao quanh hai lối đi giao nhau hình dấu cộng. Có cửa từng phòng, lối vào chính ở cạnh trên, khu vực bên ngoài và camera ngoài.</desc>
+              <rect x="34" y="24" width="532" height="342" rx="13" class="map-outside"/>
+              <text x="48" y="45" class="map-caption">KHU VỰC BÊN NGOÀI</text>
+              <rect x="190" y="48" width="218" height="40" rx="5" class="map-restricted"/><text x="299" y="73" text-anchor="middle" class="map-zone-label">VÙNG GIÁM SÁT NGOÀI</text>
+              <g class="map-camera"><path d="M82 70h28l10 9-10 9H82z"/><circle cx="107" cy="79" r="4"/><text x="72" y="105">CAMERA NGOÀI · USB / AI</text></g>
+              <rect x="120" y="112" width="360" height="220" rx="3" class="map-building"/>
+              <rect x="120" y="112" width="143" height="56" class="map-room"/><rect x="337" y="112" width="143" height="56" class="map-room"/>
+              <rect x="120" y="264" width="143" height="68" class="map-room"/><rect x="337" y="264" width="143" height="68" class="map-room"/>
+              <path d="M263 112H337V168H480V264H337V332H263V264H120V168H263Z" class="map-aisle"/>
+              <path d="M263 112V332M337 112V332M120 168H480M120 264H480" class="map-wall"/>
+              <rect x="274" y="107" width="52" height="11" fill="#142b3d"/><path d="M278 112H322" class="map-door map-main-door"/><text x="300" y="104" text-anchor="middle" class="map-door-label">LỐI VÀO CHÍNH</text>
+              <path d="M263 137v20M337 137v20M263 282v20M337 282v20" class="map-door"/>
+              <text x="191" y="145" text-anchor="middle" class="map-room-label">PHÒNG A</text><text x="408" y="145" text-anchor="middle" class="map-room-label">PHÒNG B</text>
+              <text x="191" y="302" text-anchor="middle" class="map-room-label">PHÒNG C</text><text x="408" y="302" text-anchor="middle" class="map-room-label">PHÒNG D</text>
+              <text x="300" y="190" text-anchor="middle" class="map-aisle-label">LỐI ĐI</text><text x="300" y="210" text-anchor="middle" class="map-aisle-label">DỌC</text>
+              <text x="191" y="224" text-anchor="middle" class="map-aisle-label">LỐI ĐI NGANG</text><text x="408" y="224" text-anchor="middle" class="map-aisle-label">LỐI ĐI NGANG</text>
+              <g class="map-camera map-inside-camera"><path d="M132 234h18l7 6-7 6h-18z"/><circle cx="148" cy="240" r="2.5"/><text x="164" y="239">CAMERA TRONG</text><text x="164" y="252">ESP32-CAM</text></g>
+              <text x="300" y="354" text-anchor="middle" class="map-note">SƠ ĐỒ MINH HỌA · KHÔNG THEO TỶ LỆ</text>
+            </svg>
+            <p>3D không khả dụng; sơ đồ 2D thể hiện bố cục bốn phòng và hai lối đi giao nhau.</p>
+          </div>
+          <div class="twin-stage-top"><span><i></i> NHÀ KHO / GÓC NHÌN 3D</span><span id="twin-clock">—</span></div>
+          <div class="twin-view-controls" role="group" aria-label="Điều khiển góc nhìn nhà kho 3D">
+            <button type="button" data-twin-action="zoom-in" aria-label="Phóng to" title="Phóng to">+</button>
+            <button type="button" data-twin-action="zoom-out" aria-label="Thu nhỏ" title="Thu nhỏ">−</button>
+            <button type="button" data-twin-action="reset" aria-label="Khôi phục góc nhìn toàn cảnh" title="Khôi phục toàn cảnh">⌂</button>
+          </div>
+          <div class="twin-stage-bottom"><span id="twin-spatial-status">CHƯA HIỆU CHUẨN · TRACK CHƯA ĐỊNH VỊ</span><span>SƠ ĐỒ MINH HỌA · KHÔNG THEO TỶ LỆ</span></div>
+          <div class="twin-legend"><span><i class="legend-safe"></i> An toàn</span><span><i class="legend-warn"></i> Cảnh báo</span><span><i class="legend-alarm"></i> Báo động</span></div>
+        </div>
+        <aside class="twin-rail">
+          <div class="twin-state-card" id="twin-state-card"><span>TRẠNG THÁI AN NINH</span><strong id="twin-state">ĐANG CHỜ</strong><small id="twin-state-reason">Chưa nhận được trạng thái camera</small></div>
+          <div class="twin-metrics">
+            <div><span>NGƯỜI TRONG VÙNG</span><b id="twin-people">–</b></div>
+            <div><span>TRACK ĐANG THEO DÕI</span><b id="twin-tracks">–</b></div>
+            <div><span>AI PROCESS FPS</span><b id="twin-fps">–</b></div>
+            <div><span>ĐỘ TRỄ AI</span><b id="twin-latency">–</b></div>
+          </div>
+          <div class="twin-device-list">
+            <div><i id="twin-camera-dot"></i><span>Camera USB / YOLO</span><b id="twin-camera-status">Đang kiểm tra</b></div>
+            <div><i id="twin-tracker-dot"></i><span>ByteTrack</span><b id="twin-tracker-status">Đang kiểm tra</b></div>
+            <div><i id="twin-esp-dot"></i><span>ESP32</span><b id="twin-esp-status">Đang kiểm tra</b></div>
+          </div>
+          <div class="twin-event-box"><div class="twin-event-title"><b>DIỄN BIẾN GẦN ĐÂY</b><span>SỰ KIỆN CAMERA</span></div><ul id="twin-event-list"><li>Đang tải sự kiện…</li></ul></div>
+        </aside>
+      </div>
+      <p class="twin-footnote"><span id="twin-data-age">CHƯA CÓ DỮ LIỆU</span> · Mô hình bố trí 3D mang tính minh họa theo sơ đồ kho trong tài liệu dự án. Vị trí người/Track trong không gian 3D không phải tọa độ đo từ camera; các chỉ số và trạng thái hiển thị được lấy từ backend.</p>
+    </section>
+
+    <section class="analytics-command" aria-labelledby="analytics-title">
+      <div class="analytics-head"><div><p>PHÂN TÍCH AN NINH / HÔM NAY</p><h2 id="analytics-title">Dữ liệu vận hành trong ngày</h2><span>Biểu đồ động từ thống kê hệ thống · cập nhật định kỳ</span><a class="vizzu-credit" href="https://vizzu.com/" target="_blank" rel="noopener noreferrer" aria-label="Mở website Vizzu">Vizzu ↗</a></div><span id="analytics-updated">CHƯA ĐỒNG BỘ</span></div>
+      <div id="warehouse-analytics-chart" role="img" aria-label="Biểu đồ thống kê thẻ, lượt quẹt, lượt từ chối và cảnh báo trong ngày"></div>
+      <p class="analytics-note">Thẻ hoạt động là số lượng hiện tại; lượt quẹt, lượt từ chối và cảnh báo là số liệu trong ngày. Các nhóm không đại diện cho cùng một khoảng thời gian.</p>
+    </section>
+  </section>
+
+  <section id="inside" hidden>
+    <div class="section-heading"><div><p>MẠNG CAMERA / 01</p><h2>Camera giám sát bên trong</h2><span>Luồng hình ảnh trực tiếp từ camera ESP32-CAM.</span></div></div>
+    <div class="cam" id="cam-in">
+      <img alt="Camera trong kho ESP32-CAM">
+    </div>
+    <div class="cam-tools">
+      <p id="cam-in-status" role="status">Đang kết nối camera trong…</p>
+      <div class="row cam-zone-actions">       <button type="button" id="cam-webrtc-toggle">Thử WebRTC</button>
+        <button type="button" id="cam-in-reload">Tải lại camera</button>
+      </div>
+    </div>
+    <label class="inline">
+      Địa chỉ camera trong (MJPEG)
+      <input id="cam-in-url" value="/api/camera/inside/stream" readonly>
+    </label>
+    <p class="muted">Camera trong được backend proxy qua phiên quản trị; chỉ phục vụ xem hình, không đi qua pipeline YOLO của camera USB ngoài. Địa chỉ ESP32-CAM cấu hình bằng KHOAI_ESP32_CAM_STREAM_URL.</p>
   </section>
 
   <section id="outside" hidden>
+    <div class="section-heading"><div><p>GIÁM SÁT AI / 02</p><h2>Giám sát AI khu vực bên ngoài</h2><span>Theo dõi đối tượng, vùng bảo vệ và trạng thái phân tích từ camera USB.</span></div></div>
+    <div class="vision-livebar">
+      <div><span>TRẠNG THÁI AN NINH</span><b id="vision-state">ĐANG CHỜ</b></div>
+      <div><span>NGƯỜI TRONG VÙNG</span><b id="vision-zone-people">–</b></div>
+      <div><span>ĐỐI TƯỢNG ĐANG THEO DÕI</span><b id="vision-track-count">–</b></div>
+      <div><span>ĐỘ TRỄ AI</span><b id="vision-latency">–</b></div>
+      <div class="vision-live-indicator"><i></i> LUỒNG AI TRỰC TIẾP</div>
+    </div>
     <div class="cam" id="cam-out">
       <img alt="Camera USB ngoài">
       <canvas id="cam-out-overlay" aria-label="Lớp vẽ vùng bảo vệ"></canvas>
+      <div class="vision-corner vision-corner-tl">KHOAI / GIÁM SÁT AI</div>
+      <div class="vision-corner vision-corner-tr" id="vision-frame-label">LUỒNG TRỰC TIẾP</div>
+      <div class="vision-corner vision-corner-bl" id="vision-feed-health">ĐANG CHỜ CAMERA</div>
+      <div class="vision-corner vision-corner-br" id="stream-distribution-status" data-state="offline">PHÂN PHỐI VIDEO · ĐANG CHỜ</div>
     </div>
 
     <div class="cam-tools">
       <div class="row cam-zone-actions">
-        <button type="button" id="cam-zone-edit" class="primary">Vẽ vùng bảo vệ</button>
-        <button type="button" id="cam-zone-undo" disabled>Hoàn tác điểm</button>
-        <button type="button" id="cam-zone-save" disabled>Lưu vùng</button>
-        <button type="button" id="cam-zone-cancel" disabled>Hủy</button>
-        <button type="button" id="cam-heatmap-toggle" aria-pressed="false">Heatmap chuyển động</button>
-<<<<<<< HEAD
-        <button type="button" id="cam-anti-theft-toggle" aria-pressed="true">Tắt chống trộm</button>
-=======
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
+        <button type="button" id="cam-zone-edit" data-write class="primary">Vẽ vùng bảo vệ</button>
+        <button type="button" id="cam-zone-undo" data-write disabled>Hoàn tác điểm</button>
+        <button type="button" id="cam-zone-save" data-write disabled>Lưu vùng</button>
+        <button type="button" id="cam-zone-cancel" data-write disabled>Hủy</button>
+        <button type="button" id="cam-heatmap-toggle" data-write aria-pressed="false">Heatmap chuyển động</button>
+        <button type="button" id="cam-anti-theft-toggle" data-write aria-pressed="true">Tắt chống trộm</button>
       </div>
       <p id="cam-zone-msg" role="status">Vùng bảo vệ được lưu ở backend. Bấm “Vẽ vùng bảo vệ” để đặt các điểm mới trên hình camera.</p>
     </div>
@@ -76,21 +194,23 @@
       <div class="stat"><span>Khung hình mới nhất</span><strong id="cam-age">–</strong></div>
       <div class="stat"><span>Người đang nhận diện</span><strong id="cam-detections">0</strong></div>
       <div class="stat"><span>Trạng thái AI</span><strong id="cam-ai-status">Đang kiểm tra</strong></div>
-<<<<<<< HEAD
-      <div class="stat"><span>Chống trộm</span><strong id="cam-security-state">SAFE</strong></div>
+      <div class="stat"><span>Trạng thái an ninh</span><strong id="cam-security-state">Chưa xác định</strong></div><div class="stat"><span>Chống trộm</span><strong id="cam-anti-theft-state">Chưa xác minh</strong></div>
       <div class="stat"><span>Lịch vùng</span><strong id="cam-zone-period">–</strong></div>
+    </div>
+    <div class="cam-event-panel">
+      <h3>Trạng thái từng Track</h3>
+      <p>PASSERBY: đi ngang vùng cảnh báo. WARNING: cần xác minh. SUSPICIOUS: hiện diện vùng cảnh báo tích lũy 30 giây (cho phép gián đoạn tối đa 4 giây), hoặc có ít nhất 3 lần tiến sát hợp lệ trong 120 giây; không phải nhận diện hành vi phạm pháp.</p>
+      <ul id="decision-track-list" class="list"><li>Chưa có Track.</li></ul>
     </div>
     <div class="cam-event-panel">
       <h3>Liên kết thẻ RFID với người trên camera</h3>
       <p>Chỉ liên kết thủ công sau khi thẻ vừa được quẹt thành công. Track ID là ID tạm thời của camera, không phải danh tính tự động.</p>
-      <form id="track-association-form" class="row">
+      <form id="track-association-form" data-write class="row">
         <label>UID thẻ vừa quẹt <input id="associate-uid" required pattern="[0-9A-Fa-f]{4,20}" maxlength="24"></label>
         <label>Track ID đang hiển thị <select id="associate-track" required><option value="">Chưa có người</option></select></label>
         <button type="submit">Liên kết</button>
       </form>
       <p id="associate-message" role="status"></p>
-=======
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
     </div>
     <div class="cam-event-panel">
       <h3>Sự kiện camera ngoài</h3>
@@ -121,44 +241,52 @@
     </label>
   </section>
 
-<<<<<<< HEAD
-=======
-  <section id="inside" hidden>
-    <div class="cam" id="cam-in">
-      <img alt="Camera trong">
-    </div>
-
-    <label class="inline">
-      Địa chỉ camera trong (luồng đã vẽ vùng từ zone_calib.py)
-      <input
-        id="cam-in-url"
-        value="http://localhost:8081/video"
-        placeholder="http://localhost:8081/video">
-    </label>
-  </section>
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 
   <section id="alerts" hidden>
+    <div class="section-heading"><div><p>TRUNG TÂM CẢNH BÁO</p><h2>Trung tâm cảnh báo</h2><span>Các sự kiện cần xác minh và xử lý từ hệ thống.</span></div></div>
+    <div class="ops-grid">
+      <section class="ops-card"><div class="ops-card-head"><div><h3>Giải thích quyết định AI</h3><p>Thông tin lấy từ trạng thái detector/Decision Engine; không tự suy diễn dữ liệu thiếu.</p></div><strong id="ai-explain-state">UNKNOWN</strong></div><p id="ai-explain-reason">Đang tải diễn giải…</p><ul id="ai-explain-inputs"><li>Đang tải dữ liệu đầu vào…</li></ul></section>
+      <section class="ops-card"><h3>Điều khiển camera</h3><div class="camera-center-grid"><article id="camera-center-out">Đang tải trạng thái camera ngoài…</article><article id="camera-center-in">Đang tải trạng thái camera trong…</article></div></section>
+    </div>
+    <div id="incident-timeline" class="ops-card timeline-panel" hidden></div>
     <ul id="alert-list" class="list"></ul>
   </section>
 
   <section id="history" hidden>
-    <table>
-      <thead>
-        <tr>
-          <th>Giờ</th>
-          <th>UID</th>
-          <th>Tên</th>
-          <th>Kết quả</th>
-          <th>Lý do</th>
-        </tr>
-      </thead>
-      <tbody id="scan-body"></tbody>
-    </table>
+    <div class="section-heading"><div><p>NHẬT KÝ TRUY CẬP</p><h2>Lịch sử hoạt động</h2><span>Tách biệt phiên quản trị hệ thống và sự kiện quẹt thẻ ra vào kho.</span></div></div>
+    <div class="history-tabs" role="tablist" aria-label="Loại lịch sử">
+      <button type="button" class="history-tab on" data-history-tab="system" role="tab" aria-selected="true">Truy cập hệ thống</button>
+      <button type="button" class="history-tab" data-history-tab="rfid" role="tab" aria-selected="false">Quẹt thẻ ra vào kho</button>
+    </div>
+    <div id="history-system-panel" class="history-panel">
+      <p class="history-note">Ghi nhận đăng nhập tài khoản, đăng xuất và thao tác quản trị. Tài khoản riêng được bật khi cấu hình bootstrap admin; phiên token dùng chung cũ vẫn được giữ để tương thích.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Thời gian</th><th scope="col">Người vận hành</th><th scope="col">Sự kiện</th><th scope="col">Địa chỉ IP</th><th scope="col">Thao tác</th><th scope="col">Kết quả / chi tiết</th></tr></thead>
+        <tbody id="system-access-body"><tr><td colspan="6">Chưa có dữ liệu.</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <section class="ops-card advanced-history">
+      <h3>Lịch sử nâng cao</h3><div class="history-filter"><label>Loại dữ liệu<select id="history-kind"><option value="access">Quẹt thẻ RFID</option><option value="security">Sự kiện an ninh</option></select></label><label>Từ khóa<input id="history-query" placeholder="Tìm UID, tên, loại sự kiện…"></label><label>Từ ngày<input id="history-start" type="date"></label><label>Đến ngày<input id="history-end" type="date"></label><button id="history-apply" type="button">Lọc</button><button id="history-export" type="button">Xuất CSV</button></div>
+      <div class="table-wrap"><table><thead><tr><th scope="col">Thời gian</th><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Chi tiết</th></tr></thead><tbody id="advanced-history-body"><tr><td colspan="4">Chọn bộ lọc và nhấn Lọc.</td></tr></tbody></table></div>
+    </section>
+    <div id="history-rfid-panel" class="history-panel" hidden>
+      <p class="history-note">Ghi nhận sự kiện quẹt thẻ tại đầu đọc RFID. Đây không phải lịch sử đăng nhập website.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Thời gian</th><th scope="col">UID</th><th scope="col">Tên nhân viên</th><th scope="col">Kết quả</th><th scope="col">Lý do</th></tr></thead>
+        <tbody id="scan-body"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="admin" hidden>
+    <div class="section-heading"><div><p>QUẢN TRỊ TRUY CẬP</p><h2>Quản trị hệ thống</h2><span>Quản lý tài khoản và quyền truy cập bảng điều khiển.</span></div></div>
+    <section class="ops-card account-admin"><h3>Tài khoản quản trị</h3><p>Tạo tài khoản riêng. Vai trò Người xem chỉ có quyền đọc dữ liệu.</p><form id="admin-user-form" data-write class="history-filter"><label>Tên đăng nhập<input name="username" required minlength="3" maxlength="80" pattern="[A-Za-z0-9_.-]+"></label><label>Tên hiển thị<input name="display_name" required maxlength="80"></label><label>Mật khẩu ban đầu<input name="password" type="password" required minlength="12" maxlength="256"></label><label>Vai trò<select name="role"><option value="admin">Quản trị</option><option value="viewer">Người xem</option></select></label><button type="submit">Tạo tài khoản</button></form><p id="admin-user-message" role="status" aria-live="polite"></p><div class="table-wrap"><table><thead><tr><th scope="col">Tài khoản</th><th scope="col">Tên hiển thị</th><th scope="col">Vai trò</th><th scope="col">Trạng thái</th></tr></thead><tbody id="admin-user-body"><tr><td colspan="4">Đang tải tài khoản…</td></tr></tbody></table></div></section>
   </section>
 
   <section id="cards" hidden>
-    <form id="card-form">
+    <div class="section-heading"><div><p>THẺ & PHÂN QUYỀN</p><h2>Quản lý thẻ và hồ sơ</h2><span>Cấp quyền truy cập, thiết lập khu vực và quản lý hồ sơ RFID.</span></div></div>
+    <form id="card-form" data-write>
       <div class="row">
         <label>
           UID
@@ -207,6 +335,10 @@
           <input type="checkbox" name="z" value="critical">
           Cực kỳ quan trọng
         </label>
+        <label class="chk">
+          <input type="checkbox" name="z" value="external_usb_zone" checked>
+          Camera USB ngoài
+        </label>
       </fieldset>
 
       <label>
@@ -235,49 +367,52 @@
       <p id="form-msg" role="status"></p>
     </form>
 
+    <section class="cam-tools">
+      <h3>ROI cửa RFID – Camera USB ngoài</h3>
+      <p class="muted">Vẽ vùng mà người quẹt thẻ cần xuất hiện để ghép tự động. ROI được lưu trên máy chủ; nếu có nhiều người hoặc nhiều vé, hệ thống không tự ghép.</p>
+      <div class="cam" id="rfid-roi-stage">
+        <img id="rfid-roi-image" alt="Ảnh camera USB để vẽ ROI cửa">
+        <canvas id="rfid-roi-overlay" aria-label="Lớp vẽ ROI cửa RFID"></canvas>
+      </div>
+      <div class="row cam-zone-actions">
+        <button type="button" id="rfid-roi-reload">Tải ảnh camera</button>
+        <button type="button" id="rfid-roi-edit" data-write class="primary">Vẽ ROI cửa</button>
+        <button type="button" id="rfid-roi-undo" data-write disabled>Hoàn tác điểm</button>
+        <button type="button" id="rfid-roi-save" data-write disabled>Lưu ROI</button>
+        <button type="button" id="rfid-roi-cancel" data-write disabled>Hủy</button>
+      </div>
+      <p id="rfid-roi-msg" role="status">Đang tải ROI cửa đã lưu.</p>
+    </section>
+
+    <section class="cam-tools">
+      <h3>RFID đang chờ ghép với người trên camera</h3>
+      <p class="muted">Chỉ ghép thủ công sau khi xác nhận đúng người. Ảnh là ảnh cắt trực tiếp từ camera USB, không phải nhận diện danh tính.</p>
+      <div id="rfid-pending-list"><p>Chưa có vé RFID đang chờ.</p></div>
+    </section>
+
     <table>
       <thead>
         <tr>
-          <th>UID</th>
-          <th>Tên</th>
-          <th>Hạn</th>
-          <th>Lượt</th>
-          <th>Vùng</th>
-          <th>Hàng</th>
-          <th>Màu</th>
-          <th></th>
+          <th scope="col">UID</th>
+          <th scope="col">Tên</th>
+          <th scope="col">Hạn</th>
+          <th scope="col">Lượt</th>
+          <th scope="col">Vùng</th>
+          <th scope="col">Hàng</th>
+          <th scope="col">Màu</th>
+          <th scope="col">Trạng thái</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody id="card-body"></tbody>
     </table>
   </section>
 </main>
+</div>
 
-<script src="app.js"></script>
-<<<<<<< HEAD
+<script type="module" src="app.js"></script>
+<script type="module" src="warehouse-twin.js"></script>
+<script type="module" src="warehouse-analytics.js"></script>
 
-=======
-<script>
-/* Camera trong: dùng luồng relay (đã vẽ vùng) từ zone_calib.py.
-   Dùng location.hostname để mở web từ máy khác trong mạng LAN vẫn chạy. */
-(function () {
-  var RELAY = "http://" + location.hostname + ":8081/video";
-  var inp = document.getElementById("cam-in-url");
-  var img = document.querySelector("#cam-in img");
-  if (!inp || !img) return;
-
-  function connect() {
-    img.src = RELAY + "?t=" + Date.now();   // chống cache khi kết nối lại
-  }
-
-  inp.value = RELAY;
-  inp.dispatchEvent(new Event("change"));   // báo cho app.js nếu nó lắng nghe ô này
-  connect();
-
-  // Mất luồng (khởi động lại zone_calib.py...) -> tự thử lại sau 2 giây.
-  img.onerror = function () { setTimeout(connect, 2000); };
-})();
-</script>
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 </body>
 </html>

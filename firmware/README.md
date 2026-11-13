@@ -6,16 +6,16 @@ Thư mục gồm hai sketch Arduino độc lập. Cả hai chứa placeholder Wi
 
 ### Kết nối
 
-| MFRC522 | ESP32 |
-|---|---:|
-| 3.3V | 3V3 |
-| GND | GND |
-| SDA / SS | GPIO5 |
-| SCK | GPIO18 |
-| MOSI | GPIO23 |
-| MISO | GPIO19 |
-| RST | GPIO22 |
-| IRQ | Không nối |
+| MFRC522  |     ESP32 |
+| -------- | --------: |
+| 3.3V     |       3V3 |
+| GND      |       GND |
+| SDA / SS |     GPIO5 |
+| SCK      |    GPIO18 |
+| MOSI     |    GPIO23 |
+| MISO     |    GPIO19 |
+| RST      |    GPIO22 |
+| IRQ      | Không nối |
 
 **MFRC522 chỉ dùng logic/nguồn 3.3 V — không cấp 5 V.** Đặt SS/SDA, SCK, MOSI, MISO, RST đúng như bảng (VSPI mặc định). Còi chủ động nối tín hiệu với GPIO27 và GND; sketch giả định còi kêu khi chân ở mức HIGH. Kiểm tra giới hạn dòng và cực tính theo module còi.
 
@@ -33,9 +33,11 @@ Cài trong Arduino IDE Library Manager:
 
 ### Cấu hình và hành vi
 
-Mở `esp32_access/esp32_access.ino`, điền `WIFI_SSID`, `WIFI_PASSWORD` và `SERVER_IP` ở đầu file. IP phải là địa chỉ máy chạy API có thể truy cập từ cùng mạng; endpoint được tạo thành `http://<SERVER_IP>:3000/api/access/check`.
+Mở `esp32_access/esp32_access.ino`, điền `WIFI_SSID` và `WIFI_PASSWORD` tại đầu file; không ghi thông tin Wi‑Fi thật vào bản mã chia sẻ. Đặt `serverIp` tới máy chạy KhoAI. `SERVER_PORT` mặc định là `3000` theo cấu hình hiện tại; nếu backend chạy cổng khác, sửa hằng số này trước khi nạp. Endpoint là `/api/rfid/scan`.
 
-Khi quét thẻ, sketch gửi POST với `Content-Type: application/json` và body như `{"uid":"04A1B2C3"}` (UID hex viết hoa, mỗi byte đủ hai ký tự). API cần trả JSON có trường boolean, ví dụ `{"allowed":true}` hoặc `{"allowed":false}`. `allowed: true` mở servo góc 90° trong 2 giây rồi đưa về góc đóng 0°; `false` kêu còi ngắn. Nếu Wi‑Fi/API lỗi, mã **fail-closed**: không mở servo. Có thể chỉnh góc servo theo cơ cấu thực tế.
+Đặt `DEVICE_ID` trùng với tên thiết bị trong `KHOAI_DEVICE_API_KEYS_JSON` (hiện mặc định `gate01`). Sinh API key riêng tối thiểu 32 ký tự, cấu hình vào registry trên backend và nhập vào Serial Monitor bằng `key <key>` hoặc `cfg <ip> <key>`. Key được lưu trong NVS và chỉ hiện bốn ký tự cuối khi dùng lệnh `show`. Firmware gửi `X-API-Key`, `X-Device-ID` và body `{"uid":"04A1B2C3","device_id":"gate01"}`. Backend trả trường boolean `allow`; chỉ `allow: true` mới mở servo. Lần quẹt trùng trong cửa sổ debounce được trả `allow: false`, không trừ quota và không mở cửa lần nữa.
+
+Servo mở góc 90° trong 2 giây rồi về góc đóng 0°; khi bị từ chối, còi/LED đỏ báo trạng thái. Mất Wi‑Fi, thiếu/sai key hoặc lỗi API đều **fail-closed**: không mở servo. Có thể chỉnh góc và thời lượng theo cơ cấu thực tế.
 
 Serial Monitor: **115200 baud**; in UID và kết quả hoặc lỗi API.
 
@@ -60,16 +62,19 @@ Thiết bị xem phải truy cập được IP của ESP32-CAM trên cùng mạn
 
 Đây là mã nguồn/hướng dẫn; chưa có tuyên bố đã nạp, chạy API thật hay kiểm thử phần cứng. Cần xác nhận tương thích thư viện, phiên bản Arduino-ESP32, đấu nối, nguồn và cơ cấu servo trên thiết bị thực tế.
 
-
 ## Firmware ESP32 tích hợp từ KHO.DOAN2
 
 ### ESP32 RFID
+
 - Mở `esp32_access/esp32_access.ino` trong Arduino IDE; cài MFRC522, ArduinoJson v6/v7, ESP32Servo.
-- Điền Wi-Fi SSID/password; đặt `SERVER_PORT` khớp cổng server KhoAI (mặc định 3000).
+- Điền Wi-Fi SSID/password và đặt `serverIp`; kiểm tra `SERVER_PORT` khớp cổng server KhoAI (mặc định 3000).
 - Nạp code, mở Serial Monitor 115200 baud; `show` xem cấu hình, `ip <IP>` đổi IP, `key <key>` đặt key.
-- Khi đặt `KHOAI_API_KEY` ở môi trường chạy backend, phải cấu hình cùng key trên ESP32.
+- Mặc định firmware dùng HTTP để tương thích mạng LAN hiện có. Có thể bật HTTPS trong `esp32_access.ino` bằng `SERVER_USE_HTTPS = true`, điền CA PEM vào `SERVER_ROOT_CA`, và dùng chứng thư có SAN khớp `serverIp`; thiếu CA thì firmware từ chối kết nối. Không dùng chế độ bỏ qua xác minh chứng thư.
+- Nếu tiếp tục dùng HTTP, chỉ triển khai trong VLAN/mạng thiết bị cô lập, chặn truy cập từ Wi-Fi khách và Internet, và chỉ cho phép thiết bị đi tới API server.
+- Đặt API key ngẫu nhiên riêng tối thiểu 32 ký tự cho mỗi thiết bị. Có thể cấu hình `KHOAI_DEVICE_API_KEYS_JSON` dạng `{"gate01":"<key-random-32-ky-tu-tro-len>"}`; khóa ID phải khớp `DEVICE_ID` trong sketch. Firmware gửi `X-Device-ID` và `X-API-Key`. Nếu chưa bật registry theo thiết bị, server dùng tương thích ngược với `KHOAI_API_KEY` dùng chung.
 
 ### ESP32-CAM AI Thinker
+
 - Mở `esp32_cam/esp32_cam.ino`; chọn board AI Thinker ESP32-CAM và điền Wi-Fi.
 - Mở Serial Monitor để xem IP. Web stream là `http://<IP>:81/stream`, ảnh tĩnh `http://<IP>/capture`.
 - Trong web KhoAI > Thiết lập thiết bị, nhập `http://<IP>:81` rồi lưu.

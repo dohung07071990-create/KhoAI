@@ -1,0 +1,14 @@
+{
+  "enabled": false,
+  "note": "Chưa hiệu chuẩn. Không được hiển thị tọa độ sàn khi chưa có điểm tương ứng đo thực tế.",
+  "camera_id": "usb_external",
+  "required_pairs": "Ít nhất 4 cặp điểm ảnh (pixel) và tọa độ sàn (X,Y) đo thực tế.",
+  "max_rms_error": 0.15,
+  "floor_units": "m",
+  "mapping": "planar_xy",
+  "invalidated_when": [
+    "Camera đổi ID/camera profile",
+    "Độ phân giải khung hình thay đổi",
+    "Người vận hành xác nhận camera đã di chuyển hoặc đổi góc"
+  ]
+}

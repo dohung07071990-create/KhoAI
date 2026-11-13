@@ -5,11 +5,9 @@ Phần khởi tạo (init): nạp `.env` ngay khi gói được import, trước
 """
 from __future__ import annotations
 
-<<<<<<< HEAD
-__version__ = "0.5.1"
-=======
-__version__ = "0.3.0"
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
+from pathlib import Path
+
+__version__ = (Path(__file__).resolve().parents[1] / "VERSION.txt").read_text(encoding="utf-8").strip()
 
 try:  # `ai/` là tùy chọn (Docker bản nhẹ có thể không kèm theo)
     from ai.envfile import load_env_file

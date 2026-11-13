@@ -6,10 +6,7 @@ Trước khi demo: chạy với --calib để xem mặt nạ từng màu và ch�
 import argparse, os, time, cv2, numpy as np, requests
 
 SERVER = os.getenv("KHOAI_SERVER_URL", "http://127.0.0.1:3000")
-<<<<<<< HEAD
 ADMIN_TOKEN = os.getenv("KHOAI_ADMIN_TOKEN", "").strip()
-=======
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
 MIN_AREA = 400   # điểm ảnh tối thiểu của một khối màu
 # (H thấp, S thấp, V thấp) - (H cao, S cao, V cao). Chỉnh lại theo đèn thật.
 COLORS = {"red": ((0,120,80),(8,255,255)), "orange": ((9,120,80),(20,255,255)),
@@ -60,15 +57,10 @@ def main():
             body = ({"camera": "outside", "people_in_zone": len(people),
                      "max_seconds": max([p["seconds"] for p in people], default=0)} if a.mode == "outside" else
                     {"camera": "inside", "people": people, "boxes": len(blobs(hsv, *BOX_COLOR))})
-<<<<<<< HEAD
             try:
                 if not ADMIN_TOKEN: raise RuntimeError("Thiếu biến môi trường KHOAI_ADMIN_TOKEN.")
                 requests.post(SERVER + "/api/events", json=body, headers={"X-Admin-Token": ADMIN_TOKEN}, timeout=2).raise_for_status()
             except (requests.RequestException, RuntimeError) as e: print("Không gửi được:", e)
-=======
-            try: requests.post(SERVER + "/api/events", json=body, timeout=2)
-            except requests.RequestException as e: print("Không gửi được:", e)
->>>>>>> 889d624ef29217e05c01da0b46d761ffd4ee4920
             last_post = t
         cv2.imshow("color_detect (q để thoát)", frame)
         if cv2.waitKey(1) == ord("q"): break

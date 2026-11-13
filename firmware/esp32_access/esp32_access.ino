@@ -4,21 +4,27 @@
    Fail-closed: network/API/JSON errors never open the lock.
 */
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <ESP32Servo.h>
 #include <Preferences.h>
+#include <string.h>
 
 const char *WIFI_SSID = "YOUR_WIFI_SSID";
 const char *WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 String serverIp = "192.168.1.50"; // Set to the PC running KhoAI; can be changed via Serial.
-String apiKey = "";              // Optional; if KHOAI_API_KEY is configured on server, set this.
+String apiKey = "";              // Required; use a unique random key for this device.
 const uint16_t SERVER_PORT = 3000; // Default KhoAI port; change if your server uses another port.
 const char *ACCESS_PATH = "/api/rfid/scan";
 const char *API_KEY_HEADER = "X-API-Key";
 const char *DEVICE_ID = "gate01";
+// Enable only after installing the issuing CA below and serving a certificate
+// whose SAN matches serverIp. TLS fails closed when no CA is configured.
+constexpr bool SERVER_USE_HTTPS = false;
+const char *SERVER_ROOT_CA = ""; // PEM root/intermediate CA for the KhoAI HTTPS endpoint.
 constexpr uint16_t HTTP_TIMEOUT_MS = 3000;
 constexpr unsigned long WIFI_CONNECT_TIMEOUT_MS = 10000;
 constexpr unsigned long WIFI_RETRY_INTERVAL_MS = 10000;
@@ -41,7 +47,7 @@ String maskKey(const String &key) { if (!key.length()) return "(chua dat)"; if (
 void printConfig() { Serial.println("Server IP: " + serverIp); Serial.println("Server port: " + String(SERVER_PORT)); Serial.println("API key: " + maskKey(apiKey)); }
 void loadConfig() { prefs.begin("cfg", false); serverIp=prefs.getString("srv_ip",serverIp); apiKey=prefs.getString("api_key",""); prefs.end(); printConfig(); }
 bool setServerIp(String v) { v.trim(); IPAddress test; if (!test.fromString(v)) { Serial.println("IP khong hop le."); return false; } prefs.begin("cfg",false); prefs.putString("srv_ip",v); prefs.end(); serverIp=v; Serial.println("Da luu IP: "+serverIp); return true; }
-bool setApiKey(String v) { v.trim(); if (!v.length()) { Serial.println("Key trong."); return false; } prefs.begin("cfg",false); prefs.putString("api_key",v); prefs.end(); apiKey=v; Serial.println("Da luu API key: "+maskKey(apiKey)); return true; }
+bool setApiKey(String v) { v.trim(); if (v.length()<32) { Serial.println("API key phai co it nhat 32 ky tu."); return false; } prefs.begin("cfg",false); prefs.putString("api_key",v); prefs.end(); apiKey=v; Serial.println("Da luu API key: "+maskKey(apiKey)); return true; }
 void handleSerialCommand() {
   if (!Serial.available()) return; String line=Serial.readStringUntil('\n'); line.trim(); if (!line.length()) return;
   if (line=="show" || line=="ip" || line=="key") printConfig();
@@ -57,10 +63,17 @@ void connectWiFi() {
 }
 void maintainWiFi(){ if(WiFi.status()==WL_CONNECTED || millis()-lastWiFiAttemptMs<WIFI_RETRY_INTERVAL_MS)return; lastWiFiAttemptMs=millis(); Serial.println("Wi-Fi disconnected; retrying"); WiFi.disconnect(); WiFi.begin(WIFI_SSID,WIFI_PASSWORD); }
 bool askAccessAPI(const String &uid, bool &allowed) {
-  lastAuthError=false; if(WiFi.status()!=WL_CONNECTED){Serial.println("API error: Wi-Fi disconnected");return false;}
-  HTTPClient http; String url=String("http://")+serverIp+":"+SERVER_PORT+ACCESS_PATH;
-  if(!http.begin(url)){Serial.println("Cannot initialize HTTP");return false;} http.setConnectTimeout(HTTP_TIMEOUT_MS); http.setTimeout(HTTP_TIMEOUT_MS);
-  http.addHeader("Content-Type","application/json"); if(apiKey.length()) http.addHeader(API_KEY_HEADER,apiKey);
+  lastAuthError=false; if(apiKey.length()<32){lastAuthError=true;Serial.println("API key thiet bi chua duoc cau hinh (toi thieu 32 ky tu).");return false;} if(WiFi.status()!=WL_CONNECTED){Serial.println("API error: Wi-Fi disconnected");return false;}
+  HTTPClient http;
+  String url=String(SERVER_USE_HTTPS ? "https://" : "http://")+serverIp+":"+SERVER_PORT+ACCESS_PATH;
+  WiFiClientSecure tlsClient;
+  if(SERVER_USE_HTTPS){
+    if(!SERVER_ROOT_CA || strlen(SERVER_ROOT_CA)<32){Serial.println("HTTPS enabled but SERVER_ROOT_CA is not configured; refusing connection.");return false;}
+    tlsClient.setCACert(SERVER_ROOT_CA);
+    if(!http.begin(tlsClient,url)){Serial.println("Cannot initialize HTTPS");return false;}
+  } else if(!http.begin(url)){Serial.println("Cannot initialize HTTP");return false;}
+  http.setConnectTimeout(HTTP_TIMEOUT_MS); http.setTimeout(HTTP_TIMEOUT_MS);
+  http.addHeader("Content-Type","application/json"); http.addHeader(API_KEY_HEADER,apiKey); http.addHeader("X-Device-ID",DEVICE_ID);
   StaticJsonDocument<128> request; request["uid"]=uid; request["device_id"]=DEVICE_ID; String body; serializeJson(request,body);
   int code=http.POST(body); if(code<200 || code>=300){if(code==401 || code==403){lastAuthError=true;Serial.printf("API key rejected (HTTP %d); enter: key <new-key>\n",code);}else Serial.printf("API error: HTTP %d\n",code); if(code>0)Serial.println(http.getString());http.end();return false;}
   String responseBody=http.getString();http.end();StaticJsonDocument<512> response;auto err=deserializeJson(response,responseBody);

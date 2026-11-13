@@ -1,74 +1,71 @@
-// Node.js built-in regression tests for the dashboard authentication bootstrap.
+// Regression tests for extracted authentication and API modules.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const vm = require('node:vm');
 
-function loadAuth({initialToken = '', promptValue = 'valid-token'} = {}) {
-  const store = new Map(initialToken ? [['khoai-admin-token', initialToken]] : []);
-  let prompts = 0;
+let createApiClient, createAuthManager;
+test.before(async () => {
+  ({ createApiClient } = await import('../frontend/core/api.js'));
+  ({ createAuthManager } = await import('../frontend/auth/auth-manager.js'));
+});
+
+test('concurrent initial auth checks share one request', async () => {
+  let calls = 0;
+  global.fetch = async () => {
+    calls++;
+    await new Promise(resolve => setTimeout(resolve, 5));
+    return new Response(JSON.stringify({ username: 'operator', role: 'admin' }), { status: 200 });
+  };
+  const seenUsers = [];
+  const auth = createAuthManager({ onUser: user => seenUsers.push(user) });
+  const users = await Promise.all(Array.from({ length: 6 }, () => auth.requestAdminToken()));
+  assert.equal(calls, 1);
+  assert.equal(users.length, 6);
+  assert.equal(seenUsers.length, 1);
+});
+
+test('API retries once after auth bootstrap and uses the HttpOnly session', async () => {
   const requests = [];
-  const sessionStorage = {
-    getItem: key => store.get(key) ?? null,
-    setItem: (key, value) => store.set(key, String(value)),
-    removeItem: key => store.delete(key),
-  };
-  const fakeFetch = async (url, options = {}) => {
-    requests.push({url, options});
-    const headers = new Headers(options.headers || {});
-    const token = headers.get('X-Admin-Token');
-    if (url === '/api/status') {
-      return new Response(JSON.stringify({ok: true}), {status: token === 'valid-token' ? 200 : 401});
+  let authCalls = 0;
+  global.fetch = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (url === '/api/private' && requests.filter(item => item.url === url).length === 1) {
+      return new Response(JSON.stringify({ detail: 'unauthorized' }), { status: 401 });
     }
-    return new Response(JSON.stringify({ok: true}), {status: token === 'valid-token' ? 200 : 401});
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
   };
-  const source = fs.readFileSync(require.resolve('../frontend/app.js'), 'utf8').split('// Tab')[0];
-  const context = {
-    sessionStorage, fetch: fakeFetch, Headers, Response,
-    window: {prompt: () => { prompts++; return promptValue; }},
-    document: {querySelector: () => null}, location: {href: 'http://localhost/'}, URL,
-    console, setTimeout, clearTimeout,
+  const client = createApiClient({
+    getToken: () => '', clearTokenIf: () => {},
+    requestAdminToken: async () => { authCalls++; }
+  });
+  assert.deepEqual(await client.api('/api/private'), { ok: true });
+  assert.equal(authCalls, 1);
+  assert.equal(requests.filter(item => item.url === '/api/private').length, 2);
+  assert.equal(requests[1].options.credentials, 'same-origin');
+});
+
+test('legacy browser token storage is not used and login UI is isolated', () => {
+  const app = fs.readFileSync(require.resolve('../frontend/app.js'), 'utf8');
+  const auth = fs.readFileSync(require.resolve('../frontend/auth/auth-manager.js'), 'utf8');
+  assert.match(app, /createAuthManager/);
+  assert.match(auth, /\/api\/auth\/me/);
+  assert.match(auth, /\/api\/auth\/login/);
+  assert.doesNotMatch(app + auth, /sessionStorage\.setItem\(\s*["']khoai-admin-token/);
+  assert.match(auth, /name="username"/);
+  assert.match(auth, /name="password"/);
+});
+
+test('POST helper sends JSON and same-origin credentials', async () => {
+  const requests = [];
+  global.fetch = async (url, options = {}) => {
+    requests.push({ url, options });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
   };
-  vm.createContext(context);
-  vm.runInContext(source + '\nglobalThis.testApi = api; globalThis.testPost = post;', context);
-  return {api: context.testApi, post: context.testPost, requests, get prompts() { return prompts; }, store};
-}
-
-test('six simultaneous first-load requests share one prompt and all retry successfully', async () => {
-  const app = loadAuth();
-  const results = await Promise.allSettled(Array.from({length: 6}, (_, i) => app.api(`/api/test-${i}`)));
-  assert.equal(app.prompts, 1);
-  assert.equal(results.filter(x => x.status === 'fulfilled').length, 6);
-  assert.equal(app.store.get('khoai-admin-token'), 'valid-token');
-});
-
-test('stale sessionStorage token is replaced once and concurrent requests succeed', async () => {
-  const app = loadAuth({initialToken: 'old-token'});
-  const results = await Promise.allSettled(Array.from({length: 6}, (_, i) => app.api(`/api/test-${i}`)));
-  assert.equal(app.prompts, 1);
-  assert.equal(results.filter(x => x.status === 'fulfilled').length, 6);
-  assert.equal(app.store.get('khoai-admin-token'), 'valid-token');
-});
-
-test('cancelled prompt is suppressed and does not persist an empty token', async () => {
-  const app = loadAuth({promptValue: ''});
-  await assert.rejects(app.api('/api/test'));
-  await assert.rejects(app.api('/api/test'));
-  assert.equal(app.prompts, 1);
-  assert.equal(app.store.has('khoai-admin-token'), false);
-});
-
-
-test('post helper exists and sends authenticated JSON', async () => {
-  const app = loadAuth({initialToken: 'valid-token'});
-  const result = await app.post('/api/cards', {uid: 'AABBCCDD'});
-  assert.equal(result.ok, true);
-  assert.equal(app.requests.length, 1);
-  const request = app.requests[0];
-  assert.equal(request.url, '/api/cards');
+  const client = createApiClient({ getToken: () => '', clearTokenIf: () => {}, requestAdminToken: async () => {} });
+  assert.deepEqual(await client.post('/api/cards', { uid: 'AABBCCDD' }), { ok: true });
+  const request = requests[0];
   assert.equal(request.options.method, 'POST');
-  const headers = new Headers(request.options.headers || {});
-  assert.equal(headers.get('Content-Type'), 'application/json');
-  assert.equal(headers.get('X-Admin-Token'), 'valid-token');
-  assert.deepEqual(JSON.parse(request.options.body), {uid: 'AABBCCDD'});
+  assert.equal(request.options.credentials, 'same-origin');
+  assert.equal(new Headers(request.options.headers).get('Content-Type'), 'application/json');
+  assert.deepEqual(JSON.parse(request.options.body), { uid: 'AABBCCDD' });
 });
