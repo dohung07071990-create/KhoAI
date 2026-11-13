@@ -1,154 +1,123 @@
-# KhoAI — Hệ thống giám sát và cảnh báo kho
+KhoAI — Nguyên mẫu kiểm soát kho
 
-**Phiên bản tài liệu:** v0.6.2-dev.24.66.8  
+**Phiên bản:** v0.6.2-dev.24.66.8  
 **Trạng thái:** prototype đang phát triển
 
-KhoAI là dashboard giám sát kho kết hợp camera, AI phát hiện người, vùng bảo vệ, thẻ RFID và cảnh báo. Dự án hướng tới việc giúp người vận hành quan sát trạng thái kho và kiểm tra sự kiện trên một giao diện web.
+KhoAI là nguyên mẫu giám sát kho kết hợp FastAPI, SQLite, giao diện web, YOLO cho camera USB và firmware ESP32/RFID. Hệ thống giúp người vận hành theo dõi camera, vùng bảo vệ, thẻ, trạng thái SAFE/WARNING/ALARM và lịch sử sự kiện trên cùng một dashboard.
 
-> KhoAI chưa được kiểm định để dùng làm hệ thống an ninh duy nhất. Ngưỡng AI cần được đánh giá tại nơi lắp đặt; thiết bị thật và triển khai production cần được kiểm tra riêng.
+> Mã nguồn có firmware và hướng dẫn; phần cứng chưa được xác minh trên thiết bị thật trong bản phát hành này. Camera USB phải cắm vào máy chạy backend. ESP32 và máy chủ phải kết nối được với nhau qua mạng LAN. KhoAI chưa được kiểm định để dùng làm hệ thống an ninh duy nhất.
 
-## KhoAI hoạt động như thế nào?
+## Chạy server và web
 
-1. **Camera USB** kết nối với máy chạy backend. OpenCV đọc hình ảnh; YOLO nhận diện người và ByteTrack theo dõi họ qua các khung hình.
-2. **Decision Engine** đối chiếu vị trí người với vùng bảo vệ, trạng thái canh gác, quyền thẻ và thời gian hiện diện để xác định SAFE, WARNING hoặc ALARM.
-3. **Backend FastAPI** quản lý tài khoản, thẻ, sự kiện, cảnh báo, bằng chứng và dữ liệu lịch sử trong SQLite.
-4. **Dashboard web** hiển thị trạng thái, video, vùng bảo vệ, cảnh báo, sự cố và lịch sử để người vận hành kiểm tra.
-5. **RFID/ESP32** có thể gửi UID thẻ đến API để kiểm tra quyền. Một lần quẹt thẻ không tự xác định người nào trong hình đã quẹt; việc liên kết thẻ với Track cần quy trình xác nhận.
-6. **ESP32-CAM** có thể cung cấp luồng MJPEG để xem camera trong. Trong cấu hình hiện tại, luồng này không chạy pipeline nhận diện AI.
+Cần Python 3.12 (khuyến nghị) và Git. Từ thư mục gốc dự án:
 
-Các trạng thái và sự kiện hỗ trợ người vận hành ra quyết định; chúng không thay thế việc xác minh trực tiếp.
-
-## Chức năng chính
-
-- Dashboard web thích ứng với màn hình máy tính và điện thoại.
-- Camera USB với pipeline OpenCV, YOLOv8 và ByteTrack.
-- Vẽ vùng bảo vệ, theo dõi trạng thái camera/AI và lưu sự kiện.
-- Quản lý thẻ RFID, hạn mức sử dụng, quyền truy cập và vé ghép tạm.
-- Tài khoản admin/viewer, phiên đăng nhập và API có xác thực.
-- Cảnh báo, nhật ký, bằng chứng hình ảnh và tích hợp Telegram tùy chọn.
-- Công cụ Decision Engine replay để xem lại dữ liệu tọa độ/trạng thái Track.
-
-## Công nghệ
-
-- **Backend:** Python, FastAPI, SQLite.
-- **AI và video:** OpenCV, Ultralytics YOLO, ByteTrack.
-- **Frontend:** HTML, CSS, JavaScript ES Modules.
-- **Thiết bị tùy chọn:** ESP32, RC522, servo, còi/LED và ESP32-CAM.
-- **Triển khai:** chạy trực tiếp bằng Python hoặc Docker Compose.
-
-## Cần cài gì?
-
-### Chạy phần mềm
-
-- Python **3.12** được khuyến nghị.
-- Git để lấy mã nguồn.
-- Camera USB nếu muốn chạy nhận diện video trực tiếp.
-- Docker Desktop là tùy chọn nếu muốn chạy bằng Docker.
-
-### Dùng firmware phần cứng
-
-Arduino IDE và board ESP32 chỉ cần khi sử dụng thiết bị. Sketch RFID cần thư viện MFRC522, ArduinoJson 6/7 và ESP32Servo. Hướng dẫn đấu nối, nạp code và cấu hình nằm trong [firmware/README.md](firmware/README.md).
-
-## Cài đặt và chạy trên Windows
-
-Mở PowerShell tại thư mục gốc dự án:
-
-```powershell
+```bash
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+
+# Linux/macOS
+source .venv/bin/activate
+
+# Windows PowerShell
+# .\.venv\Scripts\Activate.ps1
+
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -r ai/requirements.txt
-Copy-Item .env.example .env
+
+# Linux/macOS
+cp .env.example .env
+
+# Windows PowerShell: thay dòng trên bằng
+# Copy-Item .env.example .env
 ```
 
-Mở file .env vừa tạo và thay các giá trị mẫu bằng secret riêng. Tối thiểu cần cấu hình:
+Mở file .env và thay các giá trị mẫu bằng secret riêng:
 
 - KHOAI_ADMIN_TOKEN: token quản trị ngẫu nhiên, tối thiểu 24 ký tự.
-- KHOAI_API_KEY: API key ngẫu nhiên cho thiết bị, tối thiểu 32 ký tự, nếu dùng một key chung.
-- KHOAI_BOOTSTRAP_ADMIN_USERNAME và KHOAI_BOOTSTRAP_ADMIN_PASSWORD: thông tin tạo admin ban đầu khi database chưa có tài khoản.
+- KHOAI_API_KEY: API key thiết bị ngẫu nhiên, tối thiểu 32 ký tự.
+- KHOAI_BOOTSTRAP_ADMIN_USERNAME và KHOAI_BOOTSTRAP_ADMIN_PASSWORD: tài khoản admin đầu tiên; đặt mật khẩu trước khi khởi động lần đầu.
 
-Không dùng nguyên giá trị mẫu, không commit .env, và không đưa mật khẩu Wi-Fi hoặc API key thật vào GitHub.
+Không dùng nguyên giá trị mẫu, không commit .env, mật khẩu, API key, database hoặc ảnh bằng chứng.
 
-Khởi động ứng dụng:
+Khởi động backend:
+
+```bash
+python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 3000
+```
+
+Mở http://localhost:3000. Cờ --reload phù hợp khi phát triển; bỏ cờ này khi chạy ổn định. Tài liệu API /docs bị tắt mặc định; chỉ bật trong môi trường phát triển bằng KHOAI_ENABLE_OPENAPI=1.
+
+SQLite mặc định ở data/khoai.sqlite3; có thể đổi bằng DB_PATH. Múi giờ mặc định là Asia/Ho_Chi_Minh, cấu hình bằng BUSINESS_TIMEZONE.
+
+## Thử API không cần mạch
+
+Các API quản trị yêu cầu xác thực. Ví dụ PowerShell dưới đây dùng X-Admin-Token; thay giá trị bằng KHOAI_ADMIN_TOKEN trong .env:
 
 ```powershell
-python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 3000
+$h = @{ "X-Admin-Token" = "<KHOAI_ADMIN_TOKEN>" }
+$card = @{ uid = "A1B2C3D4"; name = "Nhan vien demo"; daily_quota = 3 } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/cards -Headers $h -ContentType "application/json" -Body $card
+
+$check = @{ uid = "A1B2C3D4" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/access/check -Headers $h -ContentType "application/json" -Body $check
+Invoke-RestMethod -Uri http://localhost:3000/api/stats -Headers $h
 ```
 
-Mở <http://127.0.0.1:3000> trên máy chạy backend. Camera USB phải được cắm vào máy đó. Có thể chạy python -m ai.list_cameras để kiểm tra index camera.
+Thẻ được cấp sẽ trả kết quả cho phép nếu còn hoạt động và chưa vượt hạn mức. UID chưa cấp, thẻ bị khóa, hết hạn hoặc hết quota sẽ bị từ chối. Các lần kiểm tra được ghi vào lịch sử. Có thể thử thêm từ dashboard sau khi đăng nhập admin.
 
-## Chạy bằng Docker
+## Camera USB và YOLO
 
-Sau khi tạo và cấu hình .env, chạy:
+Cài các gói AI ở bước trên, cắm camera vào chính máy chạy FastAPI rồi cấu hình CAMERA_INDEX trong .env (auto, 0, 1...). Dùng lệnh sau để dò camera:
 
-```powershell
-docker compose up --build -d
+```bash
+python -m ai.list_cameras
 ```
 
-Dashboard mặc định ở <http://127.0.0.1:3000>. Compose lưu database và dữ liệu runtime trong volume Docker. Việc truyền camera USB vào container phụ thuộc cấu hình Docker và hệ điều hành; không mặc định hoạt động trên mọi máy Windows.
+Dashboard nhận luồng camera USB từ backend. YOLO dùng model pretrained yolov8n.pt để nhận diện người; lần chạy đầu có thể cần tải model từ Internet. Đây không phải model được huấn luyện riêng cho kho của bạn. Cần hiệu chuẩn vùng và đánh giá bằng video tại nơi lắp đặt; nếu thiếu camera hoặc AI, các chức năng web/API khác vẫn có thể chạy.
 
-## Bắt đầu sử dụng
+## RFID, ESP32 và ESP32-CAM
 
-1. Khởi động backend và đăng nhập bằng tài khoản admin bootstrap đã cấu hình.
-2. Kết nối camera USB với máy chủ; xác nhận đúng camera trước khi bật nhận diện.
-3. Trong dashboard, vẽ và lưu vùng bảo vệ theo hình ảnh camera cố định.
-4. Kiểm tra trạng thái camera/AI và thử nghiệm trong môi trường an toàn trước khi bật canh gác.
-5. Nếu dùng RFID, cấu hình key thiết bị ở backend và firmware. Chỉ kết quả API hợp lệ allow: true mới cho phép firmware mở servo.
-6. Xem các sự kiện/cảnh báo và xác minh chúng với tình hình thực tế.
+### ESP32 + RC522
 
-Camera trong ESP32-CAM có thể cấu hình qua KHOAI_ESP32_CAM_STREAM_URL, ví dụ http://<IP-ESP32-CAM>:81/stream.
+Mở firmware/esp32_access/esp32_access.ino bằng Arduino IDE. Cài MFRC522, ArduinoJson 6/7 và ESP32Servo; điền Wi-Fi trong bản làm việc cục bộ, đặt IP server và cấu hình API key. Cổng mặc định là 3000, endpoint là /api/rfid/scan.
 
-## Cấu hình thiết bị RFID
+Firmware gửi X-API-Key và X-Device-ID. Key phải khớp cấu hình backend; chỉ phản hồi allow: true mới mở servo. Lỗi mạng/API hoặc key không hợp lệ giữ cửa đóng (fail-closed). HTTPS có hỗ trợ xác minh CA nhưng tắt mặc định; HTTP chỉ nên chạy trong mạng thiết bị cô lập.
 
-API /api/rfid/scan yêu cầu X-API-Key. Có thể dùng KHOAI_API_KEY dùng chung hoặc cấu hình key riêng cho từng thiết bị bằng KHOAI_DEVICE_API_KEYS_JSON. Khi dùng registry riêng, ID phải khớp DEVICE_ID trong firmware; firmware gửi cả X-Device-ID và X-API-Key.
+RC522 dùng nguồn 3.3 V, không nối 5 V. Servo cần nguồn phù hợp riêng và nối chung GND với ESP32. Xem sơ đồ chân và hướng dẫn nạp trong firmware/README.md.
 
-Ví dụ định dạng registry:
+### ESP32-CAM
 
-```dotenv
-KHOAI_DEVICE_API_KEYS_JSON={"gate01":"THAY_BANG_SECRET_NGAU_NHIEN_IT_NHAT_32_KY_TU"}
-```
+Sketch firmware/esp32_cam/esp32_cam.ino dành cho ESP32-CAM AI Thinker. Luồng MJPEG thường ở http://<IP-board>:81/stream. Đặt KHOAI_ESP32_CAM_STREAM_URL trong .env để backend cung cấp camera trong trên dashboard. Luồng này chỉ để xem, không tham gia nhận diện YOLO trong cấu hình hiện tại.
 
-Ví dụ trên chỉ minh họa định dạng; cần thay bằng secret thật. Firmware RFID mặc định dùng cổng 3000, ID gate01, và HTTP. Có thể bật HTTPS sau khi cài CA đáng tin cậy và cấu hình chứng thư hợp lệ. Nếu tiếp tục dùng HTTP, chỉ triển khai trên mạng thiết bị/VLAN cô lập vì API key không được mã hóa trên đường truyền.
+## Dự án xử lý sự kiện ra sao?
 
-MIFARE UID có thể bị sao chép trên một số loại thẻ/thiết bị. Nếu cần mức đảm bảo cao hơn, hãy dùng phần cứng và giao thức thẻ có xác thực mật mã.
+1. Camera USB gửi khung hình tới pipeline OpenCV.
+2. YOLO nhận diện người; ByteTrack duy trì ID theo dõi tạm thời.
+3. Decision Engine so vị trí với vùng bảo vệ, trạng thái canh gác và quyền đã cấu hình.
+4. Backend ghi sự kiện/cảnh báo vào SQLite và chuyển trạng thái lên dashboard.
+5. Người vận hành xem lại và xác minh cảnh báo. RFID không tự chứng minh người nào trong hình là chủ thẻ; việc ghép UID với Track cần thao tác rõ ràng.
 
-## Cấu trúc mã nguồn
+## Cấu trúc chính
 
-| Đường dẫn | Nội dung |
-| --- | --- |
-| backend/app/ | API, xác thực, database, route và dịch vụ |
-| backend/app/telegram/ | Tích hợp Telegram |
-| ai/ | Camera, detector, Decision Engine, homography và replay |
-| frontend/ | Giao diện web và module frontend |
-| firmware/ | Sketch ESP32 RFID và ESP32-CAM |
-| config/profiles/ | Cấu hình profile demo/strict |
-| tests/ | Test tự động |
-| CHANGELOG_KHOAI.md | Lịch sử thay đổi |
-| VERSION.txt | Phiên bản mã nguồn |
+- backend/app/: API, xác thực, SQLite, route và dịch vụ.
+- ai/: camera, detector, Decision Engine, homography và replay.
+- frontend/: giao diện HTML/CSS/JavaScript.
+- firmware/: ESP32 RFID và ESP32-CAM.
+- config/profiles/: profile demo và strict.
+- tests/: kiểm thử tự động.
+- CHANGELOG_KHOAI.md: lịch sử thay đổi.
+- TEST_REPORT_v0.6.2-dev.24.66.8.txt: trạng thái xác minh phiên bản này.
 
 ## Kiểm thử
 
-Chạy bộ test Python từ thư mục gốc:
+Chạy từ thư mục gốc:
 
-```powershell
+```bash
 python -m pytest -q
 ```
 
-Báo cáo TEST_REPORT_v0.6.2-dev.24.66.8.txt ghi rõ rằng pytest, Docker build, Telegram thật, camera và ESP32 chưa được chạy lại sau thay đổi của phiên bản này. Vì vậy, không xem kết quả test của bản trước là kết quả xác minh cho bản hiện tại. Hãy chạy test và thử thiết bị trên staging trước khi phát hành.
+Báo cáo phiên bản .8 ghi rõ pytest, Docker build, Telegram thật, camera và ESP32 chưa được chạy lại sau những thay đổi cuối. Kết quả của phiên bản trước không thay thế cho việc xác minh bản này.
 
-## Giới hạn hiện tại
+## Giới hạn an toàn
 
-- Chất lượng nhận diện và các ngưỡng chưa được hiệu chuẩn bằng dữ liệu video tại kho triển khai.
-- Camera, RFID, servo, còi, mạng LAN và hoạt động dài hạn cần kiểm tra trên đúng phần cứng.
-- ID của tracker có thể thay đổi và không đại diện cho danh tính một người.
-- RFID không tự chứng minh người trong hình là chủ thẻ.
-- Không mở API, camera stream hoặc thiết bị trực tiếp ra Internet nếu chưa có lớp bảo vệ phù hợp.
-- KhoAI là prototype hỗ trợ giám sát; cần người vận hành xác minh cảnh báo và duy trì biện pháp an ninh độc lập.
-
-## Tài liệu liên quan
-
-- [Hướng dẫn firmware](firmware/README.md)
-- [Lịch sử thay đổi](CHANGELOG_KHOAI.md)
-- [Báo cáo xác minh v0.6.2-dev.24.66.8](TEST_REPORT_v0.6.2-dev.24.66.8.txt)
-
+KhoAI hiện là prototype, chưa được kiểm định để bảo vệ kho thật hoặc dùng làm hệ thống an ninh duy nhất. Chất lượng nhận diện, ngưỡng cảnh báo, camera, RFID, servo và hoạt động dài hạn cần được thử trên thiết bị và vị trí triển khai thực tế. UID của một số loại thẻ có thể bị sao chép. Không mở API hoặc luồng camera trực tiếp ra Internet; khi triển khai qua mạng, dùng HTTPS, firewall và phân đoạn mạng phù hợp.
